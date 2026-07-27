@@ -23,7 +23,7 @@ const port = process.env.PORT || 4173;
 const model = 'gemini-3.5-flash-lite';
 const blocked = /(^localhost$|^127\.|^0\.|^::1$|^169\.254\.|\.local$)/i;
 const imageTypes = new Set(['image/jpeg','image/png','image/webp','image/heic','image/heif']);
-const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'};
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 const allowAnalyze = createRateLimiter(10, 60 * 60 * 1000);
 const clean = value => value?.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 600) || '';
 const meta = (html, key) => clean(html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']+)`, 'i'))?.[1] || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${key}["']`, 'i'))?.[1]);
