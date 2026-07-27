@@ -25,6 +25,8 @@ const blocked = /(^localhost$|^127\.|^0\.|^::1$|^169\.254\.|\.local$)/i;
 const imageTypes = new Set(['image/jpeg','image/png','image/webp','image/heic','image/heif']);
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
 const allowAnalyze = createRateLimiter(10, 60 * 60 * 1000);
+const sourceOf = value => /^[A-Za-z0-9_-]{1,40}$/.test(value||'') ? value : 'direct';
+const track = (event, source) => console.log(JSON.stringify({event,source,timestamp:new Date().toISOString()}));
 const clean = value => value?.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 600) || '';
 const meta = (html, key) => clean(html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']+)`, 'i'))?.[1] || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${key}["']`, 'i'))?.[1]);
 const metricSchema = { type:'OBJECT', properties:{ score:{type:'INTEGER',minimum:0,maximum:100}, reason:{type:'STRING'} }, required:['score','reason'] };
@@ -134,7 +136,11 @@ createServer(async (req,res)=>{
         res.writeHead(429,{'content-type':'application/json','retry-after':'3600'});
         return res.end(JSON.stringify({error:'요청이 많아요. 한 시간 뒤에 다시 시도해 주세요.'}));
       }
-      const data=await analyze(await readJson(req));
+      const body=await readJson(req);
+      const source=sourceOf(body.source);
+      track('analysis_started',source);
+      const data=await analyze(body);
+      track('analysis_completed',source);
       res.writeHead(200,{'content-type':'application/json'});
       return res.end(JSON.stringify(data));
     }
@@ -143,6 +149,7 @@ createServer(async (req,res)=>{
       res.writeHead(200,{'content-type':response.headers.get('content-type')||'image/jpeg','cache-control':'no-store'});
       return res.end(Buffer.from(await response.arrayBuffer()));
     }
+    if(origin.pathname==='/') track('landing_view',sourceOf(origin.searchParams.get('source')));
     const file=origin.pathname==='/'?'fit-check-prototype.html':origin.pathname.slice(1);
     if(file.includes('..')) throw Error('invalid file');
     const body=await readFile(new URL(`./${file}`,import.meta.url));

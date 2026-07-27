@@ -453,6 +453,7 @@
       const uploadCopy = document.querySelector("#upload-copy");
       const result = document.querySelector("#result");
       const submit = document.querySelector("#submit");
+      const source = new URLSearchParams(location.search).get("source") || "direct";
       const labels = {
         category: "카테고리",
         season: "시즌·소재",
@@ -548,6 +549,7 @@
                 (/\.heif$/i.test(file.name) ? "image/heif" : /\.heic$/i.test(file.name) ? "image/heic" : "image/jpeg"),
               productUrl: document.querySelector("#product").value,
               occasion: new FormData(form).get("occasion"),
+              source,
             }),
           });
           const data = await response.json();
