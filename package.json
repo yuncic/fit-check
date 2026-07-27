@@ -1,0 +1,12 @@
+{
+  "name": "fit-check-prototype",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node test-rate-limit.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>입어볼래 — AI 코디 확인</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Gowun+Batang:wght@400;700&family=Manrope:wght@400;500;600;700&display=swap');
+    :root{--ink:#1f2925;--paper:#f5f0e7;--lime:#d9fa76;--coral:#f07955;--line:#c9c2b6;--muted:#6d716a}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--ink);background:var(--paper);font-family:Manrope,sans-serif}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.3;background-image:radial-gradient(#a39d91 .55px,transparent .55px);background-size:7px 7px}
+    main{position:relative;width:min(1060px,calc(100% - 36px));margin:auto;padding:26px 0 52px}
+    nav{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--ink);padding-bottom:19px}
+    .brand{font:700 26px 'Gowun Batang',serif;letter-spacing:-1px}.mono{font:11px 'DM Mono',monospace;letter-spacing:.05em}
+    .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:58px;padding:72px 4vw 34px;align-items:end}
+    h1{margin:0;font:700 clamp(42px,7vw,80px)/.98 'Gowun Batang',serif;letter-spacing:-.08em}
+    .hero p{margin:0 0 8px;max-width:350px;font-size:15px;line-height:1.75;color:var(--muted)}
+    .note{display:inline-flex;transform:rotate(-3deg);margin:8px 0 0 8px;padding:7px 10px;background:var(--lime);font:12px 'DM Mono',monospace}
+    .card{max-width:900px;margin:20px auto 0;border:1px solid var(--ink);background:#fffdfa;box-shadow:9px 9px 0 var(--ink)}
+    .card-head{display:flex;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--ink);font:12px 'DM Mono',monospace}
+    form{padding:26px 20px 22px}.steps{display:grid;grid-template-columns:1fr 1fr;gap:20px}.num{display:inline-grid;place-items:center;width:25px;height:25px;margin-bottom:12px;border-radius:50%;background:var(--ink);color:white;font:12px 'DM Mono',monospace}
+    label{display:block;margin-bottom:9px;font-size:15px;font-weight:700}.hint{margin:0 0 13px;font-size:12px;color:var(--muted);line-height:1.5}
+    .upload{position:relative;min-height:205px;display:grid;place-items:center;overflow:hidden;border:1px dashed var(--ink);background:#ebe6db;cursor:pointer;text-align:center}
+    .upload:hover{background:#e6f4af}.upload input{position:absolute;inset:0;opacity:0;cursor:pointer}.upload span{font:13px/1.6 'DM Mono',monospace}.upload img{position:absolute;width:100%;height:100%;object-fit:cover}
+    input[type=url]{width:100%;border:0;border-bottom:1px solid var(--ink);border-radius:0;padding:12px 2px;background:transparent;color:var(--ink);font:14px Manrope,sans-serif;outline:none}input:focus{border-bottom:3px solid var(--coral)}
+    .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:22px}.chips label{margin:0}.chips input{position:absolute;opacity:0}.chips span{display:block;padding:8px 10px;border:1px solid var(--line);cursor:pointer;font-size:13px;font-weight:500}.chips input:checked+span{border-color:var(--ink);background:var(--lime)}
+    button{width:100%;margin-top:28px;padding:16px;border:1px solid var(--ink);background:var(--ink);color:white;cursor:pointer;font:600 15px Manrope,sans-serif;transition:.15s}button:hover{transform:translate(-3px,-3px);box-shadow:4px 4px 0 var(--coral)}button:disabled{cursor:wait;opacity:.7;transform:none;box-shadow:none}
+    .fine{margin:12px 0 0;font-size:11px;color:var(--muted);text-align:center}.result{display:none;padding:25px 20px 28px;border-top:1px solid var(--ink)}.result.show{display:block}
+    .result-top{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center}.product{height:150px;border:1px solid var(--line);background:#ebe6db}.product img{width:100%;height:100%;object-fit:cover}.product-empty{display:grid;place-items:center;height:100%;font:11px 'DM Mono',monospace;color:var(--muted)}
+    h2{margin:3px 0;font:700 30px/1.2 'Gowun Batang',serif;letter-spacing:-.05em}.score{display:inline-flex;padding:8px 10px;background:var(--lime);font:600 13px Manrope,sans-serif}.product-title,.summary{margin:8px 0;color:var(--muted);font-size:12px;line-height:1.6}
+    .item-read{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.item-read span{padding:5px 7px;border:1px solid var(--line);font-size:11px}
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:26px}.metric{padding:12px 0;border-top:1px solid var(--ink)}.metric b{display:block;margin-bottom:7px;font-size:13px}.bar{height:5px;background:#ddd7cc}.bar i{display:block;height:100%;background:var(--coral)}.metric small{display:block;margin-top:6px;color:var(--muted);font-size:11px;line-height:1.4}
+    .explain{margin:23px 0 0;padding:16px;background:#f0ece3;font-size:13px;line-height:1.7}.warn{margin:10px 0 0;font-size:11px;color:var(--muted);line-height:1.6}.again{margin-top:15px;background:transparent;color:var(--ink)}
+    footer{display:flex;justify-content:space-between;gap:15px;margin:36px auto 0;max-width:900px;color:var(--muted);font:11px 'DM Mono',monospace}
+    @media(max-width:680px){.hero{grid-template-columns:1fr;gap:20px;padding:50px 0 25px}h1{font-size:51px}.steps,.result-top{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.card{box-shadow:5px 5px 0 var(--ink)}.product{height:205px}footer{flex-direction:column}}
+  </style>
+</head>
+<body><main>
+  <nav><div class="brand">입어볼래</div><div class="mono">GEMINI FIT CHECK</div></nav>
+  <section class="hero">
+    <div><h1>고르지 말고,<br>사진만 주세요.</h1><div class="note">AI가 옷의 특징을 읽어요</div></div>
+    <p>내 옷 사진과 사고 싶은 상품 링크만 넣으면 Gemini가 카테고리·계절·핏·소재·패턴을 분석하고 조합 가능성을 설명합니다.</p>
+  </section>
+  <section class="card">
+    <div class="card-head"><span>AI 코디 적합도 확인</span><span>입력 2개</span></div>
+    <form id="check-form">
+      <div class="steps">
+        <div>
+          <div class="num">01</div><label for="clothes">같이 입고 싶은 내 옷</label>
+          <p class="hint">옷이 크게 보이는 사진이면 충분해요. 별도 선택은 없습니다.</p>
+          <div class="upload">
+            <input id="clothes" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" required>
+            <span id="upload-copy">사진을 올려주세요<br>JPG, PNG, WEBP, HEIC</span>
+            <img id="preview" hidden alt="업로드한 옷 미리보기">
+          </div>
+        </div>
+        <div>
+          <div class="num">02</div><label for="product">사고 싶은 상품 링크</label>
+          <p class="hint">상품 페이지의 공개 설명과 대표 이미지를 함께 분석합니다.</p>
+          <input id="product" type="url" placeholder="https://…" required>
+          <div class="chips">
+            <label><input type="radio" name="occasion" value="일상" checked><span>일상</span></label>
+            <label><input type="radio" name="occasion" value="약속"><span>약속</span></label>
+            <label><input type="radio" name="occasion" value="여행"><span>여행</span></label>
+            <label><input type="radio" name="occasion" value="격식 있는 자리"><span>격식</span></label>
+          </div>
+        </div>
+      </div>
+      <button id="submit" type="submit">AI에게 조합 물어보기 →</button>
+      <p class="fine">사진과 상품 이미지는 이번 분석 요청에만 사용됩니다. Gemini 분석 결과는 참고용입니다.</p>
+    </form>
+    <div class="result" id="result" aria-live="polite"></div>
+  </section>
+  <footer><span>입어볼래 / Gemini 3.5 Flash-Lite</span><span>사진 · 링크 · 끝</span></footer>
+</main>
+<script>
+  const form=document.querySelector('#check-form');
+  const photo=document.querySelector('#clothes');
+  const preview=document.querySelector('#preview');
+  const uploadCopy=document.querySelector('#upload-copy');
+  const result=document.querySelector('#result');
+  const submit=document.querySelector('#submit');
+  const labels={category:'카테고리',season:'시즌·소재',color:'색 조합',formality:'격식도',silhouette:'실루엣',pattern:'패턴',gender:'착용 대상'};
+  const itemLabels={top:'상의',bottom:'하의',outer:'아우터',dress:'원피스',shoes:'신발',bag:'가방',accessory:'액세서리',unknown:'판단 보류',male:'남성',female:'여성',unisex:'공용',summer:'여름',winter:'겨울',all:'사계절',transitional:'간절기'};
+
+  const toBase64=file=>new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result.split(',')[1]);
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+  const metric=(name,value)=>`<div class="metric"><b>${labels[name]} <span class="mono">${value.score}/100</span></b><div class="bar"><i style="width:${value.score}%"></i></div><small>${value.reason}</small></div>`;
+  function render(data){
+    const {analysis,product,model,usage}=data;
+    const img=product.image?`<img src="/api/image?url=${encodeURIComponent(product.image)}" alt="상품 대표 이미지">`:'<div class="product-empty">IMAGE NOT FOUND</div>';
+    const owned=analysis.items.owned, candidate=analysis.items.product;
+    const conflicts=analysis.hard_conflicts.length?analysis.hard_conflicts.join(' '):'명백한 하드 충돌은 찾지 못했어요.';
+    result.innerHTML=`<div class="result-top"><div class="product">${img}</div><div><div class="mono">${model} · confidence ${analysis.confidence}%</div><h2>${analysis.verdict} <span class="score">${analysis.score}점 / 100</span></h2><p class="product-title">${product.title}</p><p class="summary">${analysis.summary}</p><div class="item-read"><span>내 옷: ${itemLabels[owned.gender]||owned.gender} ${itemLabels[owned.category]||owned.category}</span><span>${itemLabels[owned.season]||owned.season}</span><span>${owned.fit}</span><span>${owned.material}</span><span>상품: ${itemLabels[candidate.gender]||candidate.gender} ${itemLabels[candidate.category]||candidate.category}</span></div></div></div><div class="metrics">${Object.entries(analysis.metrics).map(([name,value])=>metric(name,value)).join('')}</div><p class="explain"><b>먼저 확인할 점:</b> ${conflicts}<br>${analysis.purchase_checks.join(' · ')}</p><p class="warn">사용 토큰: 입력 ${usage?.promptTokenCount??'-'} · 출력 ${usage?.candidatesTokenCount??'-'}. 구조화 분석 뒤 명백한 카테고리·시즌·격식·착용 대상 충돌에는 코드 안전장치를 적용합니다.</p><button class="again" type="button" id="again">다른 조합 점검하기</button>`;
+    result.classList.add('show');
+    document.querySelector('#again').onclick=()=>{result.classList.remove('show');form.hidden=false;form.reset();preview.hidden=true;uploadCopy.hidden=false};
+  }
+  photo.addEventListener('change',()=>{
+    const[file]=photo.files;if(!file)return;
+    preview.src=URL.createObjectURL(file);preview.hidden=false;uploadCopy.hidden=true;
+    preview.onerror=()=>{preview.hidden=true;uploadCopy.hidden=false;uploadCopy.textContent=`${file.name} 선택됨`};
+  });
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(!form.checkValidity())return form.reportValidity();
+    if(location.protocol==='file:'){alert('Gemini 호출은 로컬 서버에서만 동작해요. start-fit-check.command를 실행해 주세요.');return}
+    const[file]=photo.files;
+    submit.disabled=true;submit.textContent='Gemini가 두 옷을 분석하는 중…';
+    try{
+      const response=await fetch('/api/analyze',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+        imageData:await toBase64(file),mimeType:file.type||(/\.heif$/i.test(file.name)?'image/heif':/\.heic$/i.test(file.name)?'image/heic':'image/jpeg'),
+        productUrl:document.querySelector('#product').value,
+        occasion:new FormData(form).get('occasion')
+      })});
+      const data=await response.json();
+      if(!response.ok)throw Error(data.error);
+      form.hidden=true;render(data);
+    }catch(error){alert(error.message||'분석하지 못했어요.')}
+    finally{submit.disabled=false;submit.textContent='AI에게 조합 물어보기 →'}
+  });
+</script></body></html>
