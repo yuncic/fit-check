@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 import convertHeic from 'heic-convert';
+import sharp from 'sharp';
 import { applyHardGuards } from './llm-guards.mjs';
 import { createRateLimiter } from './rate-limit.mjs';
 
@@ -82,11 +83,14 @@ async function pageInfo(value) {
 async function imageBlock(mime, bytes) {
   if(['image/heic','image/heif'].includes(mime)) {
     bytes=Buffer.from(await convertHeic({buffer:bytes,format:'JPEG',quality:0.85}));
-    mime='image/jpeg';
   }
-  if(!['image/jpeg','image/png','image/webp','image/gif'].includes(mime)) throw Error('unsupported image');
-  if(bytes.length>8_000_000) throw Error('image too large');
-  return {type:'image',source:{type:'base64',media_type:mime,data:bytes.toString('base64')}};
+  bytes=await sharp(bytes)
+    .rotate()
+    .resize({width:1568,height:1568,fit:'inside',withoutEnlargement:true})
+    .jpeg({quality:82,mozjpeg:true})
+    .toBuffer();
+  if(bytes.length>4_500_000) throw Error('사진을 충분히 줄이지 못했어요. 다른 사진으로 시도해 주세요.');
+  return {type:'image',source:{type:'base64',media_type:'image/jpeg',data:bytes.toString('base64')}};
 }
 async function remoteImageBlock(value) {
   const {response}=await fetchPublic(value);
