@@ -8,5 +8,8 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "dependencies": {
+    "heic-convert": "2.1.0"
   }
 }

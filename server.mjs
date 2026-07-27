@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
+import convertHeic from 'heic-convert';
 import { applyHardGuards } from './llm-guards.mjs';
 import { createRateLimiter } from './rate-limit.mjs';
 
@@ -20,7 +21,7 @@ async function loadLocalEnv() {
 await loadLocalEnv();
 
 const port = process.env.PORT || 4173;
-const model = 'gemini-3.5-flash-lite';
+const model = 'claude-haiku-4-5';
 const blocked = /(^localhost$|^127\.|^0\.|^::1$|^169\.254\.|\.local$)/i;
 const imageTypes = new Set(['image/jpeg','image/png','image/webp','image/heic','image/heif']);
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml'};
@@ -29,32 +30,32 @@ const sourceOf = value => /^[A-Za-z0-9_-]{1,40}$/.test(value||'') ? value : 'dir
 const track = (event, source) => console.log(JSON.stringify({event,source,timestamp:new Date().toISOString()}));
 const clean = value => value?.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 600) || '';
 const meta = (html, key) => clean(html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']+)`, 'i'))?.[1] || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${key}["']`, 'i'))?.[1]);
-const metricSchema = { type:'OBJECT', properties:{ score:{type:'INTEGER',minimum:0,maximum:100}, reason:{type:'STRING'} }, required:['score','reason'] };
+const metricSchema = { type:'object', properties:{ score:{type:'integer',minimum:0,maximum:100}, reason:{type:'string'} }, required:['score','reason'] };
 const itemSchema = {
-  type:'OBJECT',
+  type:'object',
   properties:{
-    category:{type:'STRING',enum:['top','bottom','outer','dress','shoes','bag','accessory','unknown']},
-    gender:{type:'STRING',enum:['male','female','unisex','unknown']},
-    season:{type:'STRING',enum:['summer','winter','all','transitional','unknown']},
-    formality:{type:'INTEGER',minimum:0,maximum:2},
-    fit:{type:'STRING',enum:['slim','regular','wide','oversized','unknown']},
-    pattern:{type:'STRING',enum:['plain','pattern','unknown']},
-    material:{type:'STRING'}, dominant_colors:{type:'ARRAY',items:{type:'STRING'},maxItems:4},
-    description:{type:'STRING'}
+    category:{type:'string',enum:['top','bottom','outer','dress','shoes','bag','accessory','unknown']},
+    gender:{type:'string',enum:['male','female','unisex','unknown']},
+    season:{type:'string',enum:['summer','winter','all','transitional','unknown']},
+    formality:{type:'integer',minimum:0,maximum:2},
+    fit:{type:'string',enum:['slim','regular','wide','oversized','unknown']},
+    pattern:{type:'string',enum:['plain','pattern','unknown']},
+    material:{type:'string'}, dominant_colors:{type:'array',items:{type:'string'},maxItems:4},
+    description:{type:'string'}
   },
   required:['category','gender','season','formality','fit','pattern','material','dominant_colors','description']
 };
 const responseSchema = {
-  type:'OBJECT',
+  type:'object',
   properties:{
-    score:{type:'INTEGER',minimum:0,maximum:100},
-    verdict:{type:'STRING',enum:['추천','조건부 추천','신중 추천','비추천']},
-    confidence:{type:'INTEGER',minimum:0,maximum:100},
-    summary:{type:'STRING'},
-    items:{type:'OBJECT',properties:{owned:itemSchema,product:itemSchema},required:['owned','product']},
-    metrics:{type:'OBJECT',properties:{category:metricSchema,season:metricSchema,color:metricSchema,formality:metricSchema,silhouette:metricSchema,pattern:metricSchema,gender:metricSchema},required:['category','season','color','formality','silhouette','pattern','gender']},
-    hard_conflicts:{type:'ARRAY',items:{type:'STRING'}},
-    purchase_checks:{type:'ARRAY',items:{type:'STRING'},maxItems:4}
+    score:{type:'integer',minimum:0,maximum:100},
+    verdict:{type:'string',enum:['추천','조건부 추천','신중 추천','비추천']},
+    confidence:{type:'integer',minimum:0,maximum:100},
+    summary:{type:'string'},
+    items:{type:'object',properties:{owned:itemSchema,product:itemSchema},required:['owned','product']},
+    metrics:{type:'object',properties:{category:metricSchema,season:metricSchema,color:metricSchema,formality:metricSchema,silhouette:metricSchema,pattern:metricSchema,gender:metricSchema},required:['category','season','color','formality','silhouette','pattern','gender']},
+    hard_conflicts:{type:'array',items:{type:'string'}},
+    purchase_checks:{type:'array',items:{type:'string'},maxItems:4}
   },
   required:['score','verdict','confidence','summary','items','metrics','hard_conflicts','purchase_checks']
 };
@@ -78,13 +79,21 @@ async function pageInfo(value) {
   const image=meta(html,'og:image');
   return {title,image:image?new URL(image,url).href:'',text:`${title} ${description}`.slice(0,1200)};
 }
-async function imagePart(value) {
+async function imageBlock(mime, bytes) {
+  if(['image/heic','image/heif'].includes(mime)) {
+    bytes=Buffer.from(await convertHeic({buffer:bytes,format:'JPEG',quality:0.85}));
+    mime='image/jpeg';
+  }
+  if(!['image/jpeg','image/png','image/webp','image/gif'].includes(mime)) throw Error('unsupported image');
+  if(bytes.length>8_000_000) throw Error('image too large');
+  return {type:'image',source:{type:'base64',media_type:mime,data:bytes.toString('base64')}};
+}
+async function remoteImageBlock(value) {
   const {response}=await fetchPublic(value);
   const mime=(response.headers.get('content-type')||'image/jpeg').split(';')[0];
   if(!imageTypes.has(mime)) throw Error('unsupported image');
   const bytes=Buffer.from(await response.arrayBuffer());
-  if(bytes.length>8_000_000) throw Error('image too large');
-  return {inlineData:{mimeType:mime,data:bytes.toString('base64')}};
+  return imageBlock(mime,bytes);
 }
 async function readJson(req) {
   const chunks=[]; let size=0;
@@ -96,8 +105,8 @@ async function readJson(req) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 async function analyze(body) {
-  const key=process.env.GEMINI_API_KEY;
-  if(!key) throw Object.assign(Error('Gemini API 키가 설정되지 않았어요.'),{status:503});
+  const key=process.env.ANTHROPIC_API_KEY;
+  if(!key) throw Object.assign(Error('Claude API 키가 설정되지 않았어요.'),{status:503});
   if(!imageTypes.has(body.mimeType)||!/^[A-Za-z0-9+/=]+$/.test(body.imageData||'')) throw Error('지원하지 않는 사진이에요.');
   const product=await pageInfo(body.productUrl);
   if(!product.image) throw Error('상품 대표 이미지를 찾지 못했어요.');
@@ -108,23 +117,30 @@ async function analyze(body) {
 카테고리와 계절의 직접 충돌은 색상이 좋아도 높은 점수를 주지 마라. 이미지에서 확실하지 않은 정보는 unknown으로 표시하라.
 점수와 각 세부 점수의 이유는 서로 모순되지 않아야 하며, 한국어로 간결하게 작성하라.`;
   const request={
-    contents:[{role:'user',parts:[
-      {text:prompt},{text:'첫 번째 이미지: 사용자가 가진 옷'},
-      {inlineData:{mimeType:body.mimeType,data:body.imageData}},
-      {text:'두 번째 이미지: 구매 후보 상품'},
-      await imagePart(product.image)
+    model,max_tokens:1800,
+    messages:[{role:'user',content:[
+      {type:'text',text:'첫 번째 이미지: 사용자가 가진 옷'},
+      await imageBlock(body.mimeType,Buffer.from(body.imageData,'base64')),
+      {type:'text',text:'두 번째 이미지: 구매 후보 상품'},
+      await remoteImageBlock(product.image),
+      {type:'text',text:prompt}
     ]}],
-    generationConfig:{responseMimeType:'application/json',responseSchema}
+    tools:[{
+      name:'record_fashion_analysis',
+      description:'두 의류의 특징과 조합 적합도 평가를 지정된 구조로 기록한다.',
+      input_schema:responseSchema
+    }],
+    tool_choice:{type:'tool',name:'record_fashion_analysis'}
   };
-  const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{
-    method:'POST',headers:{'content-type':'application/json','x-goog-api-key':key},
+  const response=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
     body:JSON.stringify(request),signal:AbortSignal.timeout(30000)
   });
   const data=await response.json();
-  if(!response.ok) throw Object.assign(Error(data.error?.message||'Gemini 분석에 실패했어요.'),{status:502});
-  const text=data.candidates?.[0]?.content?.parts?.map(part=>part.text||'').join('');
-  if(!text) throw Object.assign(Error('Gemini가 분석 결과를 반환하지 않았어요.'),{status:502});
-  return {analysis:applyHardGuards(JSON.parse(text)),product,model,usage:data.usageMetadata};
+  if(!response.ok) throw Object.assign(Error(data.error?.message||'Claude 분석에 실패했어요.'),{status:502});
+  const analysis=data.content?.find(part=>part.type==='tool_use'&&part.name==='record_fashion_analysis')?.input;
+  if(!analysis) throw Object.assign(Error('Claude가 분석 결과를 반환하지 않았어요.'),{status:502});
+  return {analysis:applyHardGuards(analysis),product,model,usage:data.usage};
 }
 
 createServer(async (req,res)=>{
