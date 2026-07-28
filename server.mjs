@@ -42,14 +42,13 @@ const itemSchema = {
   type: 'object',
   properties: {
     category: { type: 'string', enum: ['top', 'bottom', 'outer', 'dress', 'shoes', 'unknown'] },
-    gender: { type: 'string', enum: ['male', 'female', 'unisex', 'unknown'] },
     season: { type: 'string', enum: ['summer', 'winter', 'all', 'transitional', 'unknown'] },
     fit: { type: 'string' },
     material: { type: 'string' },
     dominant_colors: { type: 'array', items: { type: 'string' }, maxItems: 3 },
     description: { type: 'string' },
   },
-  required: ['category', 'gender', 'season', 'fit', 'material', 'dominant_colors', 'description'],
+  required: ['category', 'season', 'fit', 'material', 'dominant_colors', 'description'],
 };
 const recommendationSchema = {
   type: 'object',
@@ -113,16 +112,20 @@ async function analyze(body) {
   if (!imageTypes.has(body.mimeType) || !/^[A-Za-z0-9+/=]+$/.test(body.imageData || '')) {
     throw Error('지원하지 않는 사진이에요.');
   }
+  const gender = { male: '남성', female: '여성' }[body.gender];
+  if (!gender) throw Error('남성 또는 여성을 선택해 주세요.');
   const prompt = `당신은 온라인 쇼핑을 돕는 패션 스타일리스트다.
 사진 속 사용자가 가진 옷 한 벌을 먼저 분석하고, 이 옷과 함께 입기 위해 구매하면 좋은 보완 아이템을 정확히 3개 추천하라.
 착용 상황은 ${body.occasion || '일상'}이다.
+추천 및 검색 대상은 ${gender}이다.
 
 규칙:
 - 사진 속 옷과 같은 카테고리를 반복하지 말고 실제 코디를 완성하는 서로 다른 카테고리 3개를 고른다.
 - 상의·하의·아우터·신발 중에서 필요한 것만 고른다.
-- 계절, 착용 대상, 색의 명도와 채도, 소재감, 격식도, 실루엣을 함께 고려한다.
+- ${gender} 상품의 디자인과 사이즈 체계를 기준으로 추천한다.
+- 계절, 색의 명도와 채도, 소재감, 격식도, 실루엣을 함께 고려한다.
 - 추천 제목은 "검정 스트레이트 슬랙스"처럼 색상·형태·카테고리가 한눈에 보이게 쓴다.
-- search_query는 국내 패션 쇼핑몰에 그대로 입력할 수 있는 짧고 구체적인 한국어 검색어로 쓴다.
+- search_query는 국내 패션 쇼핑몰에 그대로 입력할 수 있는 짧고 구체적인 한국어 검색어로 쓰되 성별 단어는 넣지 않는다.
 - 특정 브랜드나 존재 여부를 확인할 수 없는 상품은 만들어내지 않는다.
 - 이유와 피해야 할 조건을 한국어로 간결하게 설명한다.
 - 사진에서 확실하지 않은 정보는 unknown으로 표시하고 신뢰도를 낮춘다.`;
@@ -159,7 +162,7 @@ async function analyze(body) {
     part => part.type === 'tool_use' && part.name === 'record_outfit_recommendations',
   )?.input;
   if (!analysis) throw Object.assign(Error('추천 결과를 받지 못했어요.'), { status: 502 });
-  return { analysis, model, usage: data.usage };
+  return { analysis, targetGender: body.gender, model, usage: data.usage };
 }
 
 createServer(async (req, res) => {
@@ -174,16 +177,18 @@ createServer(async (req, res) => {
       const body = await readJson(req);
       const source = sourceOf(body.source);
       const session = sessionOf(body.session);
-      track('recommendation_started', source, { session });
+      const gender = safeLabel(body.gender);
+      track('recommendation_started', source, { session, gender });
       let data;
       try {
         data = await analyze(body);
         track('recommendation_completed', source, {
           session,
+          gender,
           categories: data.analysis.recommendations.map(item => item.category).join(','),
         });
       } catch (error) {
-        track('recommendation_failed', source, { session });
+        track('recommendation_failed', source, { session, gender });
         throw error;
       }
       res.writeHead(200, { 'content-type': 'application/json' });
@@ -196,6 +201,7 @@ createServer(async (req, res) => {
         session: sessionOf(body.session),
         category: safeLabel(body.category),
         shop: safeLabel(body.shop),
+        gender: safeLabel(body.gender),
       });
       res.writeHead(204);
       return res.end();

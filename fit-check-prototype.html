@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="옷 사진 한 장으로 함께 살 아이템을 추천받고 바로 검색해보세요." />
-    <title>입어볼래 — 사진 한 장으로 다음 옷 찾기</title>
+    <title>핏체크 — 내 옷 사진 한 장으로 다음 옷 찾기</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style>
       @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Gowun+Batang:wght@400;700&family=Manrope:wght@400;500;600;700&display=swap");
@@ -17,7 +17,9 @@
         --line: #c9c2b6;
         --muted: #6d716a;
       }
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
       body {
         margin: 0;
         min-height: 100vh;
@@ -30,8 +32,8 @@
         position: fixed;
         inset: 0;
         pointer-events: none;
-        opacity: .3;
-        background-image: radial-gradient(#a39d91 .55px, transparent .55px);
+        opacity: 0.3;
+        background-image: radial-gradient(#a39d91 0.55px, transparent 0.55px);
         background-size: 7px 7px;
       }
       main {
@@ -47,19 +49,31 @@
         padding-bottom: 19px;
         border-bottom: 1px solid var(--ink);
       }
-      .brand { font: 700 26px "Gowun Batang", serif; letter-spacing: -1px; }
-      .mono { font: 11px "DM Mono", monospace; letter-spacing: .05em; }
+      .brand {
+        font:
+          700 26px "Gowun Batang",
+          serif;
+        letter-spacing: -1px;
+      }
+      .mono {
+        font:
+          11px "DM Mono",
+          monospace;
+        letter-spacing: 0.05em;
+      }
       .hero {
         display: grid;
-        grid-template-columns: 1.2fr .8fr;
+        grid-template-columns: 1.2fr 0.8fr;
         gap: 58px;
         padding: 72px 4vw 34px;
         align-items: end;
       }
       h1 {
         margin: 0;
-        font: 700 clamp(42px, 7vw, 80px)/.98 "Gowun Batang", serif;
-        letter-spacing: -.08em;
+        font:
+          700 clamp(42px, 7vw, 80px)/0.98 "Gowun Batang",
+          serif;
+        letter-spacing: -0.08em;
       }
       .hero p {
         margin: 0 0 8px;
@@ -74,7 +88,9 @@
         padding: 7px 10px;
         transform: rotate(-3deg);
         background: var(--lime);
-        font: 12px "DM Mono", monospace;
+        font:
+          12px "DM Mono",
+          monospace;
       }
       .card {
         max-width: 900px;
@@ -88,12 +104,16 @@
         justify-content: space-between;
         padding: 15px 20px;
         border-bottom: 1px solid var(--ink);
-        font: 12px "DM Mono", monospace;
+        font:
+          12px "DM Mono",
+          monospace;
       }
-      form { padding: 30px 20px 22px; }
+      form {
+        padding: 30px 20px 22px;
+      }
       .input-layout {
         display: grid;
-        grid-template-columns: 1.2fr .8fr;
+        grid-template-columns: 1.2fr 0.8fr;
         gap: 28px;
         align-items: stretch;
       }
@@ -106,10 +126,22 @@
         border-radius: 50%;
         background: var(--ink);
         color: white;
-        font: 12px "DM Mono", monospace;
+        font:
+          12px "DM Mono",
+          monospace;
       }
-      label { display: block; margin-bottom: 9px; font-size: 16px; font-weight: 700; }
-      .hint { margin: 0 0 13px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+      label {
+        display: block;
+        margin-bottom: 9px;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .hint {
+        margin: 0 0 13px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+      }
       .upload {
         position: relative;
         min-height: 285px;
@@ -120,12 +152,29 @@
         background: #ebe6db;
         cursor: pointer;
         text-align: center;
-        transition: background .15s;
+        transition: background 0.15s;
       }
-      .upload:hover { background: #e6f4af; }
-      .upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-      .upload span { padding: 20px; font: 13px/1.7 "DM Mono", monospace; }
-      .upload img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+      .upload:hover {
+        background: #e6f4af;
+      }
+      .upload input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .upload span {
+        padding: 20px;
+        font:
+          13px/1.7 "DM Mono",
+          monospace;
+      }
+      .upload img {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
       .occasion {
         display: flex;
         min-height: 100%;
@@ -136,12 +185,31 @@
       }
       .occasion h2 {
         margin: 4px 0 7px;
-        font: 700 27px/1.2 "Gowun Batang", serif;
-        letter-spacing: -.04em;
+        font:
+          700 27px/1.2 "Gowun Batang",
+          serif;
+        letter-spacing: -0.04em;
       }
-      .chips { display: grid; gap: 8px; margin-top: 20px; }
-      .chips label { margin: 0; }
-      .chips input { position: absolute; opacity: 0; }
+      .choice-group + .choice-group {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+      }
+      .choice-group h2 {
+        font-size: 23px;
+      }
+      .chips {
+        display: grid;
+        gap: 8px;
+        margin-top: 20px;
+      }
+      .chips label {
+        margin: 0;
+      }
+      .chips input {
+        position: absolute;
+        opacity: 0;
+      }
       .chips span {
         display: flex;
         justify-content: space-between;
@@ -152,16 +220,28 @@
         font-size: 13px;
         font-weight: 500;
       }
-      .chips span::after { content: "○"; font-family: monospace; }
-      .chips input:checked + span { border-color: var(--ink); background: var(--lime); }
-      .chips input:checked + span::after { content: "●"; }
-      button, .shop-link {
+      .chips span::after {
+        content: "○";
+        font-family: monospace;
+      }
+      .chips input:checked + span {
+        border-color: var(--ink);
+        background: var(--lime);
+      }
+      .chips input:checked + span::after {
+        content: "●";
+      }
+      button,
+      .shop-link {
         border: 1px solid var(--ink);
         cursor: pointer;
-        font: 600 14px Manrope, sans-serif;
-        transition: .15s;
+        font:
+          600 14px Manrope,
+          sans-serif;
+        transition: 0.15s;
       }
-      button:hover, .shop-link:hover {
+      button:hover,
+      .shop-link:hover {
         transform: translate(-3px, -3px);
         box-shadow: 4px 4px 0 var(--coral);
       }
@@ -172,27 +252,73 @@
         background: var(--ink);
         color: white;
       }
-      button:disabled { cursor: wait; opacity: .7; transform: none; box-shadow: none; }
-      .fine { margin: 12px 0 0; color: var(--muted); font-size: 11px; text-align: center; }
-      .result { display: none; padding: 28px 20px 30px; border-top: 1px solid var(--ink); }
-      .result.show { display: block; animation: reveal .35s ease-out; }
-      @keyframes reveal { from { opacity: 0; transform: translateY(8px); } }
+      button:disabled {
+        cursor: wait;
+        opacity: 0.7;
+        transform: none;
+        box-shadow: none;
+      }
+      .fine {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 11px;
+        text-align: center;
+      }
+      .result {
+        display: none;
+        padding: 28px 20px 30px;
+        border-top: 1px solid var(--ink);
+      }
+      .result.show {
+        display: block;
+        animation: reveal 0.35s ease-out;
+      }
+      @keyframes reveal {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+      }
       .result-intro {
         display: grid;
         grid-template-columns: 150px 1fr;
         gap: 22px;
         align-items: center;
       }
-      .owned-image { width: 150px; height: 150px; border: 1px solid var(--ink); object-fit: cover; }
-      .eyebrow { color: var(--muted); font: 11px "DM Mono", monospace; }
+      .owned-image {
+        width: 150px;
+        height: 150px;
+        border: 1px solid var(--ink);
+        object-fit: cover;
+      }
+      .eyebrow {
+        color: var(--muted);
+        font:
+          11px "DM Mono",
+          monospace;
+      }
       .result h2 {
         margin: 5px 0 8px;
-        font: 700 32px/1.15 "Gowun Batang", serif;
-        letter-spacing: -.05em;
+        font:
+          700 32px/1.15 "Gowun Batang",
+          serif;
+        letter-spacing: -0.05em;
       }
-      .summary { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
-      .owned-tags, .specs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-      .owned-tags span, .specs span {
+      .summary {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+      .owned-tags,
+      .specs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+      }
+      .owned-tags span,
+      .specs span {
         padding: 5px 7px;
         border: 1px solid var(--line);
         font-size: 11px;
@@ -205,8 +331,16 @@
         padding-bottom: 10px;
         border-bottom: 1px solid var(--ink);
       }
-      .recommendation-title strong { font: 700 23px "Gowun Batang", serif; }
-      .recommendations { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      .recommendation-title strong {
+        font:
+          700 23px "Gowun Batang",
+          serif;
+      }
+      .recommendations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
       .recommendation {
         display: flex;
         min-width: 0;
@@ -215,14 +349,26 @@
         border: 1px solid var(--ink);
         background: var(--card);
       }
-      .category { color: var(--coral); font: 11px "DM Mono", monospace; }
+      .category {
+        color: var(--coral);
+        font:
+          11px "DM Mono",
+          monospace;
+      }
       .recommendation h3 {
         min-height: 52px;
         margin: 8px 0 2px;
-        font: 700 20px/1.3 "Gowun Batang", serif;
-        letter-spacing: -.03em;
+        font:
+          700 20px/1.3 "Gowun Batang",
+          serif;
+        letter-spacing: -0.03em;
       }
-      .reason { flex: 1; margin: 14px 0; font-size: 12px; line-height: 1.65; }
+      .reason {
+        flex: 1;
+        margin: 14px 0;
+        font-size: 12px;
+        line-height: 1.65;
+      }
       .avoid {
         margin: 0 0 15px;
         padding-top: 10px;
@@ -235,11 +381,17 @@
         overflow: hidden;
         margin-bottom: 9px;
         color: var(--muted);
-        font: 10px "DM Mono", monospace;
+        font:
+          10px "DM Mono",
+          monospace;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      .shop-links { display: grid; gap: 7px; }
+      .shop-links {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 7px;
+      }
       .shop-link {
         display: block;
         padding: 10px 8px;
@@ -248,7 +400,10 @@
         text-align: center;
         text-decoration: none;
       }
-      .shop-link.secondary { background: transparent; color: var(--ink); }
+      .shop-link.secondary {
+        background: transparent;
+        color: var(--ink);
+      }
       .again {
         width: 100%;
         margin-top: 16px;
@@ -263,35 +418,67 @@
         max-width: 900px;
         margin: 36px auto 0;
         color: var(--muted);
-        font: 11px "DM Mono", monospace;
+        font:
+          11px "DM Mono",
+          monospace;
       }
       @media (max-width: 720px) {
-        .hero { grid-template-columns: 1fr; gap: 20px; padding: 50px 0 25px; }
-        h1 { font-size: 50px; }
-        .input-layout, .result-intro, .recommendations { grid-template-columns: 1fr; }
-        .upload { min-height: 250px; }
-        .occasion { min-height: 0; }
-        .chips { grid-template-columns: 1fr 1fr; }
-        .card { box-shadow: 5px 5px 0 var(--ink); }
-        .result-intro { grid-template-columns: 105px 1fr; }
-        .owned-image { width: 105px; height: 125px; }
-        .recommendation h3 { min-height: 0; }
-        footer { flex-direction: column; }
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 20px;
+          padding: 50px 0 25px;
+        }
+        h1 {
+          font-size: 50px;
+        }
+        .input-layout,
+        .result-intro,
+        .recommendations {
+          grid-template-columns: 1fr;
+        }
+        .upload {
+          min-height: 250px;
+        }
+        .occasion {
+          min-height: 0;
+        }
+        .chips {
+          grid-template-columns: 1fr 1fr;
+        }
+        .card {
+          box-shadow: 5px 5px 0 var(--ink);
+        }
+        .result-intro {
+          grid-template-columns: 105px 1fr;
+        }
+        .owned-image {
+          width: 105px;
+          height: 125px;
+        }
+        .recommendation h3 {
+          min-height: 0;
+        }
+        footer {
+          flex-direction: column;
+        }
       }
     </style>
   </head>
   <body>
     <main>
       <nav>
-        <div class="brand">입어볼래</div>
+        <div class="brand">핏체크</div>
         <div class="mono">ONE PHOTO · THREE IDEAS</div>
       </nav>
       <section class="hero">
         <div>
-          <h1>한 벌에서,<br />다음 옷으로.</h1>
-          <div class="note">상품 링크는 필요 없어요</div>
+          <h1>내 옷에 어울리는,<br />다음 아이템.</h1>
+          <div class="note">쇼핑 시간을 줄여줘요!</div>
         </div>
-        <p>옷장 속 옷 사진 한 장만 올려주세요. 함께 입으면 좋은 상의·하의·아우터·신발 조건을 골라 바로 검색할 수 있게 알려드립니다.</p>
+        <p>
+          옷장 속 옷 사진 한 장만 올려주세요. <br />
+          성별과 상황에 맞는 상의·하의·아우터·신발 조건을 골라 바로 검색할 수 있게 알려드립니다.
+        </p>
       </section>
       <section class="card">
         <div class="card-head"><span>내 옷 기반 쇼핑 가이드</span><span>사진 1장</span></div>
@@ -302,20 +489,36 @@
               <label for="clothes">기준이 될 내 옷</label>
               <p class="hint">옷 한 벌이 크게 보이면 충분해요. 배경은 깔끔할수록 좋아요.</p>
               <div class="upload">
-                <input id="clothes" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" required />
+                <input
+                  id="clothes"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
+                  required
+                />
                 <span id="upload-copy">사진을 올려주세요<br />JPG, PNG, WEBP, HEIC</span>
                 <img id="preview" hidden alt="업로드한 옷 미리보기" />
               </div>
             </div>
             <div class="occasion">
-              <div class="mono">OPTIONAL</div>
-              <h2>어디에 입을까요?</h2>
-              <p class="hint">고르지 않으면 일상복을 기준으로 추천해요.</p>
-              <div class="chips">
-                <label><input type="radio" name="occasion" value="일상" checked /><span>일상</span></label>
-                <label><input type="radio" name="occasion" value="약속" /><span>약속</span></label>
-                <label><input type="radio" name="occasion" value="출근" /><span>출근</span></label>
-                <label><input type="radio" name="occasion" value="여행" /><span>여행</span></label>
+              <div class="choice-group">
+                <div class="mono">REQUIRED</div>
+                <h2>누구의 옷인가요?</h2>
+                <p class="hint">선택한 성별의 상품과 핏을 기준으로 추천해요.</p>
+                <div class="chips">
+                  <label><input type="radio" name="gender" value="male" required /><span>남성</span></label>
+                  <label><input type="radio" name="gender" value="female" required /><span>여성</span></label>
+                </div>
+              </div>
+              <div class="choice-group">
+                <div class="mono">OPTIONAL</div>
+                <h2>어디에 입을까요?</h2>
+                <p class="hint">고르지 않으면 일상복을 기준으로 추천해요.</p>
+                <div class="chips">
+                  <label><input type="radio" name="occasion" value="일상" checked /><span>일상</span></label>
+                  <label><input type="radio" name="occasion" value="약속" /><span>약속</span></label>
+                  <label><input type="radio" name="occasion" value="출근" /><span>출근</span></label>
+                  <label><input type="radio" name="occasion" value="여행" /><span>여행</span></label>
+                </div>
               </div>
             </div>
           </div>
@@ -324,7 +527,7 @@
         </form>
         <div class="result" id="result" aria-live="polite"></div>
       </section>
-      <footer><span>입어볼래 / yuncic</span><span>사진 · 추천 · 검색</span></footer>
+      <footer><span>핏체크 / yuncic</span><span>사진 · 추천 · 검색</span></footer>
     </main>
     <script>
       const form = document.querySelector("#check-form");
@@ -334,15 +537,27 @@
       const result = document.querySelector("#result");
       const submit = document.querySelector("#submit");
       const source = new URLSearchParams(location.search).get("source") || "direct";
-      const session = sessionStorage.fitcheckSession ||= crypto.randomUUID();
+      const session = (sessionStorage.fitcheckSession ||= crypto.randomUUID());
       const labels = {
-        top: "상의", bottom: "하의", outer: "아우터", dress: "원피스", shoes: "신발", unknown: "판단 보류",
-        male: "남성", female: "여성", unisex: "공용", summer: "여름", winter: "겨울", all: "사계절",
+        top: "상의",
+        bottom: "하의",
+        outer: "아우터",
+        dress: "원피스",
+        shoes: "신발",
+        unknown: "판단 보류",
+        male: "남성",
+        female: "여성",
+        unisex: "공용",
+        summer: "여름",
+        winter: "겨울",
+        all: "사계절",
         transitional: "간절기",
       };
       const searchUrl = {
-        musinsa: query => `https://www.musinsa.com/search/goods?keyword=${encodeURIComponent(query)}`,
-        naver: query => `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(query)}`,
+        musinsa: (query) => `https://www.musinsa.com/search/goods?keyword=${encodeURIComponent(query)}`,
+        4910: (query) => `https://4910.kr/search?query=${encodeURIComponent(query)}`,
+        ably: (query) => `https://m.a-bly.com/search?keyword=${encodeURIComponent(query)}`,
+        zigzag: (query) => `https://zigzag.kr/search?keyword=${encodeURIComponent(query)}`,
       };
       const track = (event, details = {}) =>
         fetch("/api/track", {
@@ -351,18 +566,28 @@
           body: JSON.stringify({ event, source, session, ...details }),
           keepalive: true,
         }).catch(() => {});
-      const escapeHtml = value =>
-        String(value).replace(/[&<>"']/g, character => ({
-          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
-        })[character]);
-      const toBase64 = file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      function recommendationCard(item, index) {
-        const query = escapeHtml(item.search_query);
+      const escapeHtml = (value) =>
+        String(value).replace(
+          /[&<>"']/g,
+          (character) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#039;",
+            })[character],
+        );
+      const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      function recommendationCard(item, index, targetGender) {
+        const query = `${labels[targetGender]} ${item.search_query}`;
+        const safeQuery = escapeHtml(query);
         const category = labels[item.category] || item.category;
         return `<article class="recommendation">
           <div class="category">0${index + 1} / ${escapeHtml(category)}</div>
@@ -370,14 +595,16 @@
           <div class="specs"><span>${escapeHtml(item.color)}</span><span>${escapeHtml(item.fit)}</span><span>${escapeHtml(item.material)}</span><span>${escapeHtml(labels[item.season] || item.season)}</span></div>
           <p class="reason">${escapeHtml(item.reason)}</p>
           <p class="avoid"><b>피하면 좋은 조건</b><br>${escapeHtml(item.avoid)}</p>
-          <div class="search-query">${query}</div>
+          <div class="search-query">${safeQuery}</div>
           <div class="shop-links">
-            <a class="shop-link" target="_blank" rel="noopener noreferrer" href="${searchUrl.musinsa(item.search_query)}" data-shop="musinsa" data-category="${item.category}">무신사에서 검색 →</a>
-            <a class="shop-link secondary" target="_blank" rel="noopener noreferrer" href="${searchUrl.naver(item.search_query)}" data-shop="naver" data-category="${item.category}">네이버 쇼핑에서 검색</a>
+            <a class="shop-link" target="_blank" rel="noopener noreferrer" href="${searchUrl.musinsa(query)}" data-shop="musinsa" data-category="${item.category}">무신사 →</a>
+            <a class="shop-link secondary" target="_blank" rel="noopener noreferrer" href="${searchUrl["4910"](query)}" data-shop="4910" data-category="${item.category}">4910 →</a>
+            <a class="shop-link secondary" target="_blank" rel="noopener noreferrer" href="${searchUrl.ably(query)}" data-shop="ably" data-category="${item.category}">에이블리 →</a>
+            <a class="shop-link secondary" target="_blank" rel="noopener noreferrer" href="${searchUrl.zigzag(query)}" data-shop="zigzag" data-category="${item.category}">지그재그 →</a>
           </div>
         </article>`;
       }
-      function render({ analysis }) {
+      function render({ analysis, targetGender }) {
         const owned = analysis.owned;
         result.innerHTML = `<div class="result-intro">
           <img class="owned-image" src="${preview.src}" alt="분석한 내 옷">
@@ -385,18 +612,20 @@
             <div class="eyebrow">사진 판단 신뢰도 ${analysis.confidence}%</div>
             <h2>${escapeHtml(analysis.style_direction)}</h2>
             <p class="summary">${escapeHtml(analysis.summary)}</p>
-            <div class="owned-tags"><span>${escapeHtml(labels[owned.gender] || owned.gender)}</span><span>${escapeHtml(labels[owned.category] || owned.category)}</span><span>${escapeHtml(labels[owned.season] || owned.season)}</span><span>${escapeHtml(owned.fit)}</span><span>${escapeHtml(owned.material)}</span></div>
+            <div class="owned-tags"><span>${escapeHtml(labels[targetGender])}</span><span>${escapeHtml(labels[owned.category] || owned.category)}</span><span>${escapeHtml(labels[owned.season] || owned.season)}</span><span>${escapeHtml(owned.fit)}</span><span>${escapeHtml(owned.material)}</span></div>
           </div>
         </div>
         <div class="recommendation-title"><strong>같이 사면 좋은 3가지</strong><span class="mono">SEARCH, NOT SCRAPE</span></div>
-        <div class="recommendations">${analysis.recommendations.map(recommendationCard).join("")}</div>
+        <div class="recommendations">${analysis.recommendations.map((item, index) => recommendationCard(item, index, targetGender)).join("")}</div>
         <button class="again" type="button" id="again">다른 옷으로 다시 추천받기</button>`;
         result.classList.add("show");
-        result.querySelectorAll(".shop-link").forEach(link => link.addEventListener("click", () => {
-          track("search_clicked", { shop: link.dataset.shop, category: link.dataset.category });
-        }));
+        result.querySelectorAll(".shop-link").forEach((link) =>
+          link.addEventListener("click", () => {
+            track("search_clicked", { shop: link.dataset.shop, category: link.dataset.category, gender: targetGender });
+          }),
+        );
         document.querySelector("#again").onclick = () => {
-          track("recommend_again");
+          track("recommend_again", { gender: targetGender });
           result.classList.remove("show");
           form.hidden = false;
           form.reset();
@@ -419,7 +648,7 @@
           uploadCopy.textContent = `${file.name} 선택됨`;
         };
       });
-      form.addEventListener("submit", async event => {
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
         if (!form.checkValidity()) return form.reportValidity();
         if (location.protocol === "file:") {
@@ -435,8 +664,11 @@
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               imageData: await toBase64(file),
-              mimeType: file.type || (/\.heif$/i.test(file.name) ? "image/heif" : /\.heic$/i.test(file.name) ? "image/heic" : "image/jpeg"),
+              mimeType:
+                file.type ||
+                (/\.heif$/i.test(file.name) ? "image/heif" : /\.heic$/i.test(file.name) ? "image/heic" : "image/jpeg"),
               occasion: new FormData(form).get("occasion"),
+              gender: new FormData(form).get("gender"),
               source,
               session,
             }),
