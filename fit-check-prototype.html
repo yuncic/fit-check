@@ -249,8 +249,31 @@
         width: 100%;
         margin-top: 24px;
         padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
         background: var(--ink);
         color: white;
+      }
+      #submit.loading::before {
+        content: "";
+        width: 15px;
+        height: 15px;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        border-top-color: var(--lime);
+        border-radius: 50%;
+        animation: spin 0.75s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #submit.loading::before {
+          animation-duration: 1.5s;
+        }
       }
       button:disabled {
         cursor: wait;
@@ -657,7 +680,9 @@
         }
         const [file] = photo.files;
         submit.disabled = true;
-        submit.textContent = "옷장을 살펴보는 중…";
+        submit.classList.add("loading");
+        submit.setAttribute("aria-busy", "true");
+        submit.textContent = "아이템 찾는 중…";
         try {
           const response = await fetch("/api/analyze", {
             method: "POST",
@@ -682,6 +707,8 @@
           alert(error.message || "추천을 만들지 못했어요.");
         } finally {
           submit.disabled = false;
+          submit.classList.remove("loading");
+          submit.removeAttribute("aria-busy");
           submit.textContent = "어울리는 아이템 찾기 →";
         }
       });
