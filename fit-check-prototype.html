@@ -493,6 +493,30 @@
           11px "DM Mono",
           monospace;
       }
+      @media (min-width: 721px) {
+        .input-layout {
+          grid-template-columns: 1fr;
+        }
+        .occasion {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          min-height: 0;
+          padding: 22px 0;
+        }
+        .choice-group {
+          padding: 0 22px;
+        }
+        .choice-group + .choice-group {
+          margin-top: 0;
+          padding: 0 22px;
+          border-top: 0;
+          border-left: 1px solid var(--line);
+        }
+        .occasion .chips {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          margin-top: 16px;
+        }
+      }
       @media (max-width: 720px) {
         main {
           width: 100%;
