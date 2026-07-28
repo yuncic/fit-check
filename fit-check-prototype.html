@@ -20,9 +20,13 @@
       * {
         box-sizing: border-box;
       }
+      html,
+      body {
+        overflow-x: hidden;
+      }
       body {
         margin: 0;
-        min-height: 100vh;
+        min-height: 100dvh;
         color: var(--ink);
         background: var(--paper);
         font-family: Manrope, sans-serif;
@@ -164,10 +168,27 @@
         cursor: pointer;
       }
       .upload span {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        gap: 7px;
         padding: 20px;
         font:
           13px/1.7 "DM Mono",
           monospace;
+      }
+      .upload svg {
+        width: 34px;
+        height: 34px;
+        margin-bottom: 3px;
+        stroke-width: 1.6;
+      }
+      .upload b {
+        font: 600 14px Manrope, sans-serif;
+      }
+      .upload small {
+        color: var(--muted);
+        font: 11px/1.55 "DM Mono", monospace;
       }
       .upload img {
         position: absolute;
@@ -239,6 +260,18 @@
           600 14px Manrope,
           sans-serif;
         transition: 0.15s;
+        touch-action: manipulation;
+      }
+      .upload,
+      .chips span {
+        touch-action: manipulation;
+      }
+      button:focus-visible,
+      .shop-link:focus-visible,
+      .upload:focus-within,
+      .chips input:focus-visible + span {
+        outline: 3px solid var(--coral);
+        outline-offset: 3px;
       }
       button:hover,
       .shop-link:hover {
@@ -271,8 +304,11 @@
         }
       }
       @media (prefers-reduced-motion: reduce) {
+        .result.show {
+          animation: none;
+        }
         #submit.loading::before {
-          animation-duration: 1.5s;
+          animation: none;
         }
       }
       button:disabled {
@@ -446,43 +482,256 @@
           monospace;
       }
       @media (max-width: 720px) {
+        main {
+          width: 100%;
+          padding: max(18px, env(safe-area-inset-top)) 0 calc(40px + env(safe-area-inset-bottom));
+        }
+        nav {
+          margin: 0 20px;
+          padding-bottom: 15px;
+        }
+        .brand {
+          font-size: 24px;
+        }
+        nav .mono {
+          font-size: 9px;
+        }
         .hero {
           grid-template-columns: 1fr;
-          gap: 20px;
-          padding: 50px 0 25px;
+          gap: 18px;
+          padding: 38px 20px 30px;
         }
         h1 {
-          font-size: 50px;
+          font-size: clamp(41px, 12.5vw, 48px);
+          line-height: 1.03;
+          letter-spacing: -0.065em;
+        }
+        .hero p {
+          max-width: none;
+          margin: 0;
+          font-size: 16px;
+          line-height: 1.7;
+        }
+        .hero p br {
+          display: none;
+        }
+        .note {
+          margin: 12px 0 0;
+          padding: 7px 11px;
+          transform: none;
+          border-radius: 999px;
+          font-size: 11px;
         }
         .input-layout,
         .result-intro,
         .recommendations {
           grid-template-columns: 1fr;
         }
+        .card {
+          width: calc(100% - 24px);
+          margin: 0 12px;
+          overflow: hidden;
+          border-color: var(--line);
+          border-radius: 20px;
+          box-shadow: 0 14px 34px rgba(31, 41, 37, 0.13);
+        }
+        .card-head {
+          padding: 14px 16px;
+          border: 0;
+          background: var(--ink);
+          color: white;
+          font-size: 10px;
+        }
+        form {
+          padding: 20px 16px 16px;
+        }
+        .input-layout {
+          gap: 16px;
+        }
+        .num {
+          width: 28px;
+          height: 28px;
+          margin-bottom: 10px;
+        }
+        label {
+          margin-bottom: 7px;
+          font-size: 18px;
+        }
+        .hint {
+          margin-bottom: 12px;
+          font-size: 14px;
+          line-height: 1.6;
+        }
         .upload {
-          min-height: 250px;
+          min-height: 210px;
+          border-width: 1.5px;
+          border-radius: 16px;
+          background: #f0ece3;
+        }
+        .upload span {
+          gap: 6px;
+        }
+        .upload svg {
+          width: 40px;
+          height: 40px;
+        }
+        .upload b {
+          font-size: 16px;
+        }
+        .upload small {
+          font-size: 11px;
         }
         .occasion {
           min-height: 0;
+          padding: 18px 16px;
+          border: 0;
+          border-radius: 16px;
+        }
+        .choice-group + .choice-group {
+          margin-top: 20px;
+          padding-top: 20px;
+        }
+        .choice-group h2 {
+          margin-top: 5px;
+          font-size: 24px;
         }
         .chips {
           grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          margin-top: 12px;
         }
-        .card {
-          box-shadow: 5px 5px 0 var(--ink);
+        .chips span {
+          min-height: 48px;
+          align-items: center;
+          padding: 11px 13px;
+          border-radius: 12px;
+          font-size: 14px;
+        }
+        #submit {
+          min-height: 56px;
+          margin-top: 18px;
+          padding: 14px 16px;
+          border-radius: 14px;
+          font-size: 16px;
+          box-shadow: 0 8px 20px rgba(31, 41, 37, 0.2);
+        }
+        button:hover,
+        .shop-link:hover {
+          transform: none;
+          box-shadow: none;
+        }
+        button:active,
+        .shop-link:active,
+        .chips label:active span {
+          transform: scale(0.985);
+        }
+        .fine {
+          padding: 0 6px;
+          font-size: 12px;
+          line-height: 1.55;
+        }
+        .result {
+          padding: 24px 16px;
+          border-top: 0;
         }
         .result-intro {
-          grid-template-columns: 105px 1fr;
+          grid-template-columns: 96px 1fr;
+          gap: 14px;
         }
         .owned-image {
-          width: 105px;
-          height: 125px;
+          width: 96px;
+          height: 120px;
+          border-color: var(--line);
+          border-radius: 14px;
+        }
+        .eyebrow {
+          font-size: 10px;
+        }
+        .result h2 {
+          margin-top: 6px;
+          font-size: 27px;
+        }
+        .summary {
+          font-size: 15px;
+        }
+        .owned-tags span,
+        .specs span {
+          padding: 6px 8px;
+          border-radius: 999px;
+          font-size: 12px;
+        }
+        .recommendation-title {
+          margin: 28px 0 12px;
+        }
+        .recommendation-title strong {
+          font-size: 24px;
+        }
+        .recommendation-title .mono {
+          display: none;
+        }
+        .recommendations {
+          gap: 12px;
+        }
+        .recommendation {
+          padding: 18px;
+          border-color: var(--line);
+          border-radius: 16px;
+          box-shadow: 0 5px 18px rgba(31, 41, 37, 0.06);
+        }
+        .category {
+          font-size: 11px;
         }
         .recommendation h3 {
           min-height: 0;
+          margin-top: 7px;
+          font-size: 22px;
+        }
+        .reason {
+          margin: 14px 0;
+          font-size: 15px;
+        }
+        .avoid {
+          font-size: 13px;
+        }
+        .search-query {
+          font-size: 11px;
+          line-height: 1.5;
+          white-space: normal;
+        }
+        .shop-links {
+          gap: 8px;
+        }
+        .shop-link {
+          min-height: 46px;
+          display: grid;
+          place-items: center;
+          padding: 10px;
+          border-radius: 11px;
+          font-size: 14px;
+        }
+        .again {
+          min-height: 48px;
+          border-radius: 12px;
         }
         footer {
           flex-direction: column;
+          margin: 28px 20px 0;
+          font-size: 10px;
+        }
+      }
+      @media (max-height: 500px) and (orientation: landscape) {
+        main {
+          padding-top: 14px;
+        }
+        .hero {
+          padding-top: 28px;
+          padding-bottom: 22px;
+        }
+        h1 {
+          font-size: 48px;
+        }
+        .card {
+          margin-top: 8px;
         }
       }
     </style>
@@ -510,7 +759,7 @@
             <div>
               <div class="num">01</div>
               <label for="clothes">기준이 될 내 옷</label>
-              <p class="hint">옷 한 벌이 크게 보이면 충분해요. 배경은 깔끔할수록 좋아요.</p>
+              <p class="hint">옷만 찍은 사진과 직접 입은 사진 모두 가능해요.</p>
               <div class="upload">
                 <input
                   id="clothes"
@@ -518,7 +767,15 @@
                   accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                   required
                 />
-                <span id="upload-copy">사진을 올려주세요<br />JPG, PNG, WEBP, HEIC</span>
+                <span id="upload-copy">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                    <circle cx="8.5" cy="10" r="1.5"></circle>
+                    <path d="m4 17 4.5-4 3.5 3 2.5-2 5.5 4"></path>
+                  </svg>
+                  <b>사진을 선택하거나 촬영하세요</b>
+                  <small>JPG · PNG · WEBP · HEIC</small>
+                </span>
                 <img id="preview" hidden alt="업로드한 옷 미리보기" />
               </div>
             </div>
@@ -561,6 +818,7 @@
       const submit = document.querySelector("#submit");
       const source = new URLSearchParams(location.search).get("source") || "direct";
       const session = (sessionStorage.fitcheckSession ||= crypto.randomUUID());
+      const scrollBehavior = matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
       const labels = {
         top: "상의",
         bottom: "하의",
@@ -654,7 +912,7 @@
           form.reset();
           preview.hidden = true;
           uploadCopy.hidden = false;
-          window.scrollTo({ top: form.offsetTop, behavior: "smooth" });
+          window.scrollTo({ top: form.offsetTop, behavior: scrollBehavior });
         };
       }
       photo.addEventListener("change", () => {
@@ -702,7 +960,7 @@
           if (!response.ok) throw Error(data.error);
           form.hidden = true;
           render(data);
-          result.scrollIntoView({ behavior: "smooth", block: "start" });
+          result.scrollIntoView({ behavior: scrollBehavior, block: "start" });
         } catch (error) {
           alert(error.message || "추천을 만들지 못했어요.");
         } finally {
