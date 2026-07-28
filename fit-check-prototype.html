@@ -819,6 +819,17 @@
                 </div>
               </div>
               <div class="choice-group">
+                <div class="mono">REQUIRED</div>
+                <h2>어느 계절에 입을까요?</h2>
+                <p class="hint">선택한 계절의 기온과 소재에 맞춰 추천해요.</p>
+                <div class="chips">
+                  <label><input type="radio" name="season" value="spring" required /><span>봄</span></label>
+                  <label><input type="radio" name="season" value="summer" required /><span>여름</span></label>
+                  <label><input type="radio" name="season" value="autumn" required /><span>가을</span></label>
+                  <label><input type="radio" name="season" value="winter" required /><span>겨울</span></label>
+                </div>
+              </div>
+              <div class="choice-group">
                 <div class="mono">OPTIONAL</div>
                 <h2>어디에 입을까요?</h2>
                 <p class="hint">고르지 않으면 일상복을 기준으로 추천해요.</p>
@@ -858,7 +869,9 @@
         male: "남성",
         female: "여성",
         unisex: "공용",
+        spring: "봄",
         summer: "여름",
+        autumn: "가을",
         winter: "겨울",
         all: "사계절",
         transitional: "간절기",
@@ -914,7 +927,7 @@
           </div>
         </article>`;
       }
-      function render({ analysis, targetGender }) {
+      function render({ analysis, targetGender, targetSeason }) {
         const owned = analysis.owned;
         const [, styleTitle, styleDetail = ""] =
           analysis.style_direction.match(/^(.+?)\s*[-–—]\s*(.+)$/) || ["", analysis.style_direction];
@@ -924,7 +937,7 @@
           ${styleDetail ? `<p class="style-detail">${escapeHtml(styleDetail)}</p>` : ""}
           <img class="owned-image" src="${preview.src}" alt="분석한 내 옷">
           <p class="summary">${escapeHtml(analysis.summary)}</p>
-          <div class="owned-tags"><span>${escapeHtml(labels[targetGender])}</span><span>${escapeHtml(labels[owned.category] || owned.category)}</span><span>${escapeHtml(labels[owned.season] || owned.season)}</span><span>${escapeHtml(owned.fit)}</span><span>${escapeHtml(owned.material)}</span></div>
+          <div class="owned-tags"><span>${escapeHtml(labels[targetGender])}</span><span>${escapeHtml(labels[targetSeason])} 추천</span><span>${escapeHtml(labels[owned.category] || owned.category)}</span><span>${escapeHtml(owned.fit)}</span><span>${escapeHtml(owned.material)}</span></div>
         </div>
         <div class="recommendation-title"><strong>같이 사면 좋은 3가지</strong><span class="mono">SEARCH, NOT SCRAPE</span></div>
         <div class="recommendations">${analysis.recommendations.map((item, index) => recommendationCard(item, index, targetGender)).join("")}</div>
@@ -932,11 +945,11 @@
         result.classList.add("show");
         result.querySelectorAll(".shop-link").forEach((link) =>
           link.addEventListener("click", () => {
-            track("search_clicked", { shop: link.dataset.shop, category: link.dataset.category, gender: targetGender });
+            track("search_clicked", { shop: link.dataset.shop, category: link.dataset.category, gender: targetGender, season: targetSeason });
           }),
         );
         document.querySelector("#again").onclick = () => {
-          track("recommend_again", { gender: targetGender });
+          track("recommend_again", { gender: targetGender, season: targetSeason });
           result.classList.remove("show");
           form.hidden = false;
           form.reset();
@@ -972,6 +985,7 @@
         submit.setAttribute("aria-busy", "true");
         submit.textContent = "아이템 찾는 중…";
         try {
+          const fields = new FormData(form);
           const response = await fetch("/api/analyze", {
             method: "POST",
             headers: { "content-type": "application/json" },
@@ -980,8 +994,9 @@
               mimeType:
                 file.type ||
                 (/\.heif$/i.test(file.name) ? "image/heif" : /\.heic$/i.test(file.name) ? "image/heic" : "image/jpeg"),
-              occasion: new FormData(form).get("occasion"),
-              gender: new FormData(form).get("gender"),
+              occasion: fields.get("occasion"),
+              gender: fields.get("gender"),
+              season: fields.get("season"),
               source,
               session,
             }),

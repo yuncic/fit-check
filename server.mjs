@@ -58,7 +58,7 @@ const recommendationSchema = {
     color: { type: 'string' },
     fit: { type: 'string' },
     material: { type: 'string' },
-    season: { type: 'string', enum: ['summer', 'winter', 'all', 'transitional'] },
+    season: { type: 'string', enum: ['spring', 'summer', 'autumn', 'winter', 'all', 'transitional'] },
     search_query: { type: 'string' },
     reason: { type: 'string' },
     avoid: { type: 'string' },
@@ -114,15 +114,19 @@ async function analyze(body) {
   }
   const gender = { male: '남성', female: '여성' }[body.gender];
   if (!gender) throw Error('남성 또는 여성을 선택해 주세요.');
+  const season = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' }[body.season];
+  if (!season) throw Error('봄, 여름, 가을, 겨울 중 하나를 선택해 주세요.');
   const prompt = `당신은 온라인 쇼핑을 돕는 패션 스타일리스트다.
 사진 속 사용자가 가진 옷 한 벌을 먼저 분석하고, 이 옷과 함께 입기 위해 구매하면 좋은 보완 아이템을 정확히 3개 추천하라.
 착용 상황은 ${body.occasion || '일상'}이다.
 추천 및 검색 대상은 ${gender}이다.
+착용 계절은 ${season}이다.
 
 규칙:
 - 사진 속 옷과 같은 카테고리를 반복하지 말고 실제 코디를 완성하는 서로 다른 카테고리 3개를 고른다.
 - 상의·하의·아우터·신발 중에서 필요한 것만 고른다.
 - ${gender} 상품의 디자인과 사이즈 체계를 기준으로 추천한다.
+- 모든 추천은 ${season}의 기온과 날씨에 실제로 입을 수 있는 두께와 소재여야 한다.
 - 계절, 색의 명도와 채도, 소재감, 격식도, 실루엣을 함께 고려한다.
 - style_direction은 "미니멀 캐주얼 - 그레이톤을 활용한 차분한 데일리 스타일"처럼 짧은 스타일명, 하이픈, 한 문장 설명 순서로 쓴다.
 - 추천 제목은 "검정 스트레이트 슬랙스"처럼 색상·형태·카테고리가 한눈에 보이게 쓴다.
@@ -163,7 +167,7 @@ async function analyze(body) {
     part => part.type === 'tool_use' && part.name === 'record_outfit_recommendations',
   )?.input;
   if (!analysis) throw Object.assign(Error('추천 결과를 받지 못했어요.'), { status: 502 });
-  return { analysis, targetGender: body.gender, model, usage: data.usage };
+  return { analysis, targetGender: body.gender, targetSeason: body.season, model, usage: data.usage };
 }
 
 createServer(async (req, res) => {
@@ -179,17 +183,19 @@ createServer(async (req, res) => {
       const source = sourceOf(body.source);
       const session = sessionOf(body.session);
       const gender = safeLabel(body.gender);
-      track('recommendation_started', source, { session, gender });
+      const season = safeLabel(body.season);
+      track('recommendation_started', source, { session, gender, season });
       let data;
       try {
         data = await analyze(body);
         track('recommendation_completed', source, {
           session,
           gender,
+          season,
           categories: data.analysis.recommendations.map(item => item.category).join(','),
         });
       } catch (error) {
-        track('recommendation_failed', source, { session, gender });
+        track('recommendation_failed', source, { session, gender, season });
         throw error;
       }
       res.writeHead(200, { 'content-type': 'application/json' });
@@ -203,6 +209,7 @@ createServer(async (req, res) => {
         category: safeLabel(body.category),
         shop: safeLabel(body.shop),
         gender: safeLabel(body.gender),
+        season: safeLabel(body.season),
       });
       res.writeHead(204);
       return res.end();
