@@ -18,4 +18,7 @@ assert.match(page, /name="gender" value="female" required/);
 assert.match(page, /#submit\.loading::before/);
 assert.match(page, /submit\.classList\.add\("loading"\)/);
 assert.match(page, /submit\.classList\.remove\("loading"\)/);
+assert.match(page, /style_direction\.match\(\/\^\(\.\+\?\)\\s\*\[-–—\]/);
+assert.match(page, /\.style-detail/);
+assert.match(page, /\.summary\s*\{\s*display: none;/);
 console.log('prototype checks passed');

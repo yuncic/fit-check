@@ -341,14 +341,20 @@
       .result-intro {
         display: grid;
         grid-template-columns: 150px 1fr;
-        gap: 22px;
-        align-items: center;
+        column-gap: 22px;
+        row-gap: 0;
+        align-items: start;
       }
       .owned-image {
+        grid-column: 1;
+        grid-row: 1 / span 5;
         width: 150px;
         height: 150px;
         border: 1px solid var(--ink);
         object-fit: cover;
+      }
+      .result-intro > :not(.owned-image) {
+        grid-column: 2;
       }
       .eyebrow {
         color: var(--muted);
@@ -362,6 +368,12 @@
           700 32px/1.15 "Gowun Batang",
           serif;
         letter-spacing: -0.05em;
+      }
+      .style-detail {
+        margin: -2px 0 8px;
+        color: var(--ink);
+        font-size: 14px;
+        line-height: 1.55;
       }
       .summary {
         margin: 0;
@@ -635,24 +647,41 @@
           border-top: 0;
         }
         .result-intro {
-          grid-template-columns: 96px 1fr;
-          gap: 14px;
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+        .result-intro > :not(.owned-image),
+        .owned-image {
+          grid-column: 1;
         }
         .owned-image {
-          width: 96px;
-          height: 120px;
+          grid-row: auto;
+          width: 100%;
+          height: min(72vw, 300px);
+          margin-top: 18px;
           border-color: var(--line);
           border-radius: 14px;
+          background: #f0ece3;
+          object-fit: contain;
         }
         .eyebrow {
           font-size: 10px;
         }
         .result h2 {
-          margin-top: 6px;
+          margin: 8px 0 0;
           font-size: 27px;
         }
+        .style-detail {
+          margin: 5px 0 0;
+          color: var(--muted);
+          font-size: 14px;
+          line-height: 1.55;
+        }
         .summary {
-          font-size: 15px;
+          display: none;
+        }
+        .owned-tags {
+          margin-top: 14px;
         }
         .owned-tags span,
         .specs span {
@@ -887,14 +916,15 @@
       }
       function render({ analysis, targetGender }) {
         const owned = analysis.owned;
+        const [, styleTitle, styleDetail = ""] =
+          analysis.style_direction.match(/^(.+?)\s*[-–—]\s*(.+)$/) || ["", analysis.style_direction];
         result.innerHTML = `<div class="result-intro">
+          <div class="eyebrow">사진 판단 신뢰도 ${analysis.confidence}%</div>
+          <h2>${escapeHtml(styleTitle)}</h2>
+          ${styleDetail ? `<p class="style-detail">${escapeHtml(styleDetail)}</p>` : ""}
           <img class="owned-image" src="${preview.src}" alt="분석한 내 옷">
-          <div>
-            <div class="eyebrow">사진 판단 신뢰도 ${analysis.confidence}%</div>
-            <h2>${escapeHtml(analysis.style_direction)}</h2>
-            <p class="summary">${escapeHtml(analysis.summary)}</p>
-            <div class="owned-tags"><span>${escapeHtml(labels[targetGender])}</span><span>${escapeHtml(labels[owned.category] || owned.category)}</span><span>${escapeHtml(labels[owned.season] || owned.season)}</span><span>${escapeHtml(owned.fit)}</span><span>${escapeHtml(owned.material)}</span></div>
-          </div>
+          <p class="summary">${escapeHtml(analysis.summary)}</p>
+          <div class="owned-tags"><span>${escapeHtml(labels[targetGender])}</span><span>${escapeHtml(labels[owned.category] || owned.category)}</span><span>${escapeHtml(labels[owned.season] || owned.season)}</span><span>${escapeHtml(owned.fit)}</span><span>${escapeHtml(owned.material)}</span></div>
         </div>
         <div class="recommendation-title"><strong>같이 사면 좋은 3가지</strong><span class="mono">SEARCH, NOT SCRAPE</span></div>
         <div class="recommendations">${analysis.recommendations.map((item, index) => recommendationCard(item, index, targetGender)).join("")}</div>
