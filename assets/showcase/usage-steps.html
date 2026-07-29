@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>핏체크 사용 방법</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Manrope:wght@400;600;700;800&display=swap");
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #d8d4ca;
+        color: #1f2925;
+        font-family: Manrope, sans-serif;
+      }
+      .slide {
+        position: relative;
+        width: 1600px;
+        height: 900px;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1fr 610px;
+        align-items: center;
+        padding: 74px 105px 72px 120px;
+        background-color: #f5f0e7;
+        background-image: radial-gradient(#d1c9bb 1.25px, transparent 1.25px);
+        background-size: 18px 18px;
+      }
+      .slide + .slide {
+        margin-top: 28px;
+      }
+      body:has(.slide:target) .slide:not(:target) {
+        display: none;
+      }
+      body:has(.slide:target) .slide:target {
+        margin-top: 0;
+      }
+      .slide::after {
+        content: "";
+        position: absolute;
+        inset: 26px;
+        border: 1px solid rgba(31, 41, 37, 0.24);
+        pointer-events: none;
+      }
+      .copy {
+        position: relative;
+        z-index: 2;
+        width: 800px;
+        max-width: 800px;
+      }
+
+      .step-title {
+        margin: 0;
+        max-width: 680px;
+        font-family: "Gowun Batang", serif;
+        font-size: 67px;
+        line-height: 1.18;
+        letter-spacing: -0.055em;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 105px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+      .mark {
+        width: 24px;
+        height: 24px;
+        background: #d7ff69;
+        border: 1px solid #1f2925;
+        transform: rotate(45deg);
+      }
+      .eyebrow {
+        margin: 0 0 16px;
+        color: #ff7252;
+        font-size: 21px;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+      }
+      h1 {
+        margin: 0;
+        max-width: 680px;
+        font-family: "Gowun Batang", serif;
+        font-size: 67px;
+        line-height: 1.18;
+        letter-spacing: -0.055em;
+      }
+      .desc {
+        margin: 28px 0 0;
+        max-width: 655px;
+        color: #5f655f;
+        font-size: 24px;
+        line-height: 1.75;
+        letter-spacing: -0.025em;
+      }
+      .note {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 42px;
+        padding: 12px 18px;
+        background: #fffdfa;
+        border: 1px solid #c9c1b4;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .note::before {
+        content: "✓";
+        display: grid;
+        place-items: center;
+        width: 23px;
+        height: 23px;
+        border-radius: 50%;
+        background: #d7ff69;
+      }
+      .page {
+        position: absolute;
+        left: 120px;
+        bottom: 54px;
+        font: 700 14px/1 Manrope;
+        letter-spacing: 0.16em;
+      }
+      .phone-wrap {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+      }
+      .halo {
+        position: absolute;
+        width: 540px;
+        height: 540px;
+        border-radius: 50%;
+        background: #d7ff69;
+        opacity: 0.72;
+      }
+      .phone {
+        position: relative;
+        width: 390px;
+        height: 790px;
+        padding: 12px;
+        border-radius: 58px;
+        background: #111;
+        box-shadow:
+          0 34px 70px rgba(31, 41, 37, 0.25),
+          0 0 0 2px #555;
+      }
+      .phone::before {
+        content: "";
+        position: absolute;
+        z-index: 8;
+        top: 20px;
+        left: 50%;
+        width: 116px;
+        height: 30px;
+        border-radius: 18px;
+        background: #050505;
+        transform: translateX(-50%);
+      }
+      .screen {
+        height: 100%;
+        overflow: hidden;
+        border-radius: 47px;
+        background: #fbfaf7;
+      }
+      .status {
+        height: 48px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 13px 23px 0;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .status span:last-child {
+        letter-spacing: 0.08em;
+      }
+      .appbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 17px 22px 15px;
+        border-bottom: 1px solid #1f2925;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.07em;
+      }
+      .content {
+        padding: 20px 22px 24px;
+      }
+      .step-chip {
+        display: grid;
+        place-items: center;
+        width: 33px;
+        height: 33px;
+        margin-bottom: 12px;
+        border-radius: 50%;
+        background: #1f2925;
+        color: #fff;
+        font: 700 13px monospace;
+      }
+      .screen h2 {
+        margin: 0;
+        font-family: "Gowun Batang", serif;
+        font-size: 28px;
+        line-height: 1.25;
+        letter-spacing: -0.05em;
+      }
+      .sub {
+        margin: 7px 0 16px;
+        color: #777a73;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .upload {
+        position: relative;
+        height: 420px;
+        overflow: hidden;
+        border: 1px dashed #1f2925;
+        background: #efe9de;
+      }
+      .upload img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .upload-label {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        padding: 9px 12px;
+        background: #d7ff69;
+        border: 1px solid #1f2925;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .privacy {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+        margin-top: 12px;
+        color: #626860;
+        font-size: 10px;
+      }
+      .mini-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 17px;
+        padding: 10px;
+        border: 1px solid #d2cabf;
+        background: #fff;
+      }
+      .mini-item img {
+        width: 62px;
+        height: 62px;
+        object-fit: cover;
+      }
+      .mini-item b {
+        display: block;
+        margin-bottom: 4px;
+        font-family: "Gowun Batang", serif;
+        font-size: 15px;
+      }
+      .mini-item span {
+        color: #777a73;
+        font-size: 10px;
+      }
+      .field {
+        margin-top: 15px;
+      }
+      .field-head {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .required {
+        color: #ff7252;
+        font: 700 9px monospace;
+        letter-spacing: 0.08em;
+      }
+      .options {
+        display: grid;
+        gap: 7px;
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .options.seasons {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .option {
+        padding: 11px 8px;
+        border: 1px solid #cfc7bb;
+        background: #fff;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .option.selected {
+        border-color: #1f2925;
+        background: #d7ff69;
+      }
+      .cta {
+        width: 100%;
+        margin-top: 19px;
+        padding: 14px;
+        border: 0;
+        background: #1f2925;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .result-meta {
+        color: #777a73;
+        font: 700 10px monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .result-title {
+        margin-top: 7px !important;
+        font-size: 23px !important;
+      }
+      .hero-item {
+        display: grid;
+        grid-template-columns: 106px 1fr;
+        gap: 13px;
+        margin: 14px 0 15px;
+      }
+      .hero-item img {
+        width: 106px;
+        height: 100px;
+        object-fit: cover;
+        border: 1px solid #cfc7bb;
+      }
+      .hero-item p {
+        margin: 7px 0;
+        color: #666b65;
+        font-size: 10px;
+        line-height: 1.55;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .tag {
+        padding: 5px 7px;
+        border: 1px solid #cfc7bb;
+        border-radius: 20px;
+        background: #fff;
+        font-size: 8px;
+      }
+      .rec-list {
+        display: grid;
+        gap: 8px;
+      }
+      .rec {
+        display: grid;
+        grid-template-columns: 38px 1fr auto;
+        align-items: center;
+        gap: 9px;
+        padding: 10px;
+        border: 1px solid #cfc7bb;
+        background: #fff;
+      }
+      .rec-num {
+        color: #ff7252;
+        font: 700 10px monospace;
+      }
+      .rec b {
+        display: block;
+        margin-bottom: 3px;
+        font-family: "Gowun Batang", serif;
+        font-size: 13px;
+        letter-spacing: -0.03em;
+      }
+      .rec span {
+        color: #777a73;
+        font-size: 8px;
+      }
+      .search {
+        padding: 8px 9px;
+        border: 1px solid #1f2925;
+        background: #d7ff69;
+        font-size: 8px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .screen-foot {
+        margin-top: 11px;
+        color: #777a73;
+        font-size: 9px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="slide" id="step-1">
+      <div class="copy">
+        <div class="brand"><span class="mark"></span> FIT CHECK</div>
+        <p class="eyebrow">STEP 01 · ONE PHOTO</p>
+        <span class="step-title">옷 사진 한 장으로 시작해요</span>
+        <p class="desc">
+          옷장 속에서 기준이 될 옷을 한 장 촬영하거나 선택해요. 옷만 찍은 사진과 직접 입은 사진 모두 사용할 수 있어요.
+        </p>
+        <div class="note">복잡한 옷장 등록 없이 바로 시작해요</div>
+      </div>
+      <div class="phone-wrap">
+        <div class="halo"></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="status"><span>9:41</span><span>●●● 5G ▰</span></div>
+            <div class="appbar"><span>내 옷 기반 쇼핑 가이드</span><span>사진 1장</span></div>
+            <div class="content">
+              <div class="step-chip">01</div>
+              <h2>기준이 될 내 옷</h2>
+              <p class="sub">옷만 찍은 사진과 직접 입은 사진 모두 가능해요.</p>
+              <div class="upload">
+                <img src="./user-item.png" alt="사용자가 올린 검정 데님 팬츠" />
+                <span class="upload-label">다른 사진 선택</span>
+              </div>
+              <div class="privacy">🔒 사진은 이번 추천 요청에만 사용돼요.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="page">01 / 03</div>
+    </section>
+
+    <section class="slide" id="step-2">
+      <div class="copy">
+        <div class="brand"><span class="mark"></span> FIT CHECK</div>
+        <p class="eyebrow">STEP 02 · THREE CHOICES</p>
+        <span class="step-title">입을 조건만 간단히 골라요</span>
+        <p class="desc">
+          성별과 계절, 입고 갈 상황을 선택해요. 옷의 카테고리·색상·소재·핏은 사진을 보고 자동으로 분석해요.
+        </p>
+        <div class="note">선택은 10초면 충분해요</div>
+      </div>
+      <div class="phone-wrap">
+        <div class="halo"></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="status"><span>9:41</span><span>●●● 5G ▰</span></div>
+            <div class="appbar"><span>추천 조건</span><span>2 / 2</span></div>
+            <div class="content">
+              <div class="mini-item">
+                <img src="./user-item.png" alt="" />
+                <div><b>기준 아이템</b><span>사진을 바탕으로 어울리는 옷을 찾아요</span></div>
+              </div>
+              <div class="field">
+                <div class="field-head"><span>누구의 옷인가요?</span><span class="required">REQUIRED</span></div>
+                <div class="options">
+                  <div class="option selected">남성</div>
+                  <div class="option">여성</div>
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-head"><span>어느 계절에 입을까요?</span><span class="required">REQUIRED</span></div>
+                <div class="options seasons">
+                  <div class="option">봄</div>
+                  <div class="option">여름</div>
+                  <div class="option selected">가을</div>
+                  <div class="option">겨울</div>
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-head"><span>어디에 입을까요?</span><span class="required">OPTIONAL</span></div>
+                <div class="options">
+                  <div class="option selected">일상</div>
+                  <div class="option">약속</div>
+                  <div class="option">출근</div>
+                  <div class="option">여행</div>
+                </div>
+              </div>
+              <button class="cta">어울리는 아이템 찾기 →</button>
+              <div class="screen-foot">사진을 보고 필요한 특징을 자동으로 분석해요.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="page">02 / 03</div>
+    </section>
+
+    <section class="slide" id="step-3">
+      <div class="copy">
+        <div class="brand"><span class="mark"></span> FIT CHECK</div>
+        <p class="eyebrow">STEP 03 · THREE IDEAS</p>
+        <span class="step-title">추천받고 바로 찾아봐요</span>
+        <p class="desc">
+          내 옷과 어울리는 아이템 3개를 색상·핏·소재 조건으로 확인해요. 마음에 드는 조건은 쇼핑몰에서 바로 검색할 수
+          있어요.
+        </p>
+        <div class="note">내 옷이 쇼핑의 기준이 돼요</div>
+      </div>
+      <div class="phone-wrap">
+        <div class="halo"></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="status"><span>9:41</span><span>●●● 5G ▰</span></div>
+            <div class="appbar"><span>내 옷 기반 쇼핑 가이드</span><span>추천 완료</span></div>
+            <div class="content">
+              <div class="result-meta">사진 판단 신뢰도 75%</div>
+              <h2 class="result-title">미니멀 캐주얼</h2>
+              <div class="hero-item">
+                <img src="./user-item.png" alt="" />
+                <div>
+                  <p>그레이톤을 활용한 차분한 데일리 스타일이에요.</p>
+                  <div class="tags">
+                    <span class="tag">남성</span><span class="tag">하의</span><span class="tag">가을</span
+                    ><span class="tag">일상</span>
+                  </div>
+                </div>
+              </div>
+              <div class="rec-list">
+                <div class="rec">
+                  <div class="rec-num">01 / 상의</div>
+                  <div><b>베이지 코튼 긴팔 티셔츠</b><span>베이지 · 레귤러핏 · 코튼</span></div>
+                  <button class="search">무신사 검색</button>
+                </div>
+                <div class="rec">
+                  <div class="rec-num">02 / 아우터</div>
+                  <div><b>그레이 코튼 캔버스 셔츠 재킷</b><span>그레이 · 레귤러핏 · 캔버스</span></div>
+                  <button class="search">4910 검색</button>
+                </div>
+                <div class="rec">
+                  <div class="rec-num">03 / 신발</div>
+                  <div><b>어두운 회색 캔버스 스니커즈</b><span>다크 그레이 · 캔버스 · 사계절</span></div>
+                  <button class="search">지그재그 검색</button>
+                </div>
+              </div>
+              <button class="cta">다른 조합으로 다시 추천받기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="page">03 / 03</div>
+    </section>
+  </body>
+</html>

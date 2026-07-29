@@ -166,23 +166,13 @@
       }
 
       #hero-title {
+        display: block;
         max-width: 880px;
-        margin-bottom: 0;
-        font:
-          600 clamp(58px, 8.9vw, 132px) / 0.92 "Gowun Batang",
-          serif;
-        letter-spacing: -0.095em;
-        line-height: 4.5rem;
-
-        text-wrap: balance;
-      }
-
-      h1 {
-        max-width: 880px;
-        margin-bottom: 0;
-        font:
-          700 clamp(58px, 8.9vw, 132px) / 0.92 "Gowun Batang",
-          serif;
+        margin: 0;
+        font-family: "Gowun Batang", serif;
+        font-size: clamp(58px, 8.9vw, 132px);
+        font-weight: 700;
+        line-height: 1.08;
         letter-spacing: -0.095em;
         text-wrap: balance;
       }
@@ -511,14 +501,9 @@
           display: block;
         }
 
-        #hero {
+        #hero-title {
           font-size: clamp(51px, 16vw, 76px);
-          line-height: 0.98;
-        }
-
-        h1 {
-          font-size: clamp(51px, 16vw, 76px);
-          line-height: 0.98;
+          line-height: 1.05;
         }
 
         .mobile-break {
@@ -664,10 +649,10 @@
       <section class="hero" aria-labelledby="hero-title">
         <div>
           <p class="eyebrow reveal">ONE PHOTO · THREE IDEAS</p>
-          <span id="hero-title" class="reveal">
+          <h1 id="hero-title" class="reveal">
             내 옷이<br />다음 쇼핑의<br /><span class="accent">기준</span>이<span class="mobile-break"><br /></span>
             되도록.
-          </span>
+          </h1>
         </div>
         <div class="hero-copy reveal">
           <p>옷장 속 옷 사진 한 장을 올리면, 함께 입기 좋은 아이템의 색상·핏·소재를 골라 쇼핑 검색까지 연결해드려요.</p>
