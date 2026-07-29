@@ -29,6 +29,7 @@ const types = {
   '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml',
+  '.png': 'image/png',
 };
 const allowAnalyze = createRateLimiter(10, 60 * 60 * 1000);
 const clientEvents = new Set(['landing_view', 'photo_selected', 'search_clicked', 'recommend_again']);
