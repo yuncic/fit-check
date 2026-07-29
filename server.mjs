@@ -1,99 +1,99 @@
-import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
-import { extname } from 'node:path';
-import convertHeic from 'heic-convert';
-import sharp from 'sharp';
-import { createRateLimiter } from './rate-limit.mjs';
+import { createServer } from "node:http";
+import { readFile } from "node:fs/promises";
+import { extname } from "node:path";
+import convertHeic from "heic-convert";
+import sharp from "sharp";
+import { createRateLimiter } from "./rate-limit.mjs";
 
 async function loadLocalEnv() {
   try {
-    const source = await readFile(new URL('./.env', import.meta.url), 'utf8');
+    const source = await readFile(new URL("./.env", import.meta.url), "utf8");
     for (const line of source.split(/\r?\n/)) {
       const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/);
       if (!match || process.env[match[1]]) continue;
-      process.env[match[1]] = match[2].replace(/^("|')(.*)\1$/, '$2');
+      process.env[match[1]] = match[2].replace(/^("|')(.*)\1$/, "$2");
     }
   } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
+    if (error.code !== "ENOENT") throw error;
   }
 }
 
 await loadLocalEnv();
 
 const port = process.env.PORT || 4173;
-const model = 'claude-haiku-4-5';
-const imageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']);
+const model = "claude-haiku-4-5";
+const imageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
 const types = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.mjs': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
 };
 const allowAnalyze = createRateLimiter(10, 60 * 60 * 1000);
-const clientEvents = new Set(['landing_view', 'photo_selected', 'search_clicked', 'recommend_again']);
-const sourceOf = value => (/^[A-Za-z0-9_-]{1,40}$/.test(value || '') ? value : 'direct');
-const safeLabel = value => (/^[가-힣A-Za-z0-9 _-]{1,30}$/.test(value || '') ? value : undefined);
-const sessionOf = value => (/^[a-f0-9-]{20,40}$/i.test(value || '') ? value : 'unknown');
+const clientEvents = new Set(["landing_view", "photo_selected", "search_clicked", "recommend_again"]);
+const sourceOf = (value) => (/^[A-Za-z0-9_-]{1,40}$/.test(value || "") ? value : "direct");
+const safeLabel = (value) => (/^[가-힣A-Za-z0-9 _-]{1,30}$/.test(value || "") ? value : undefined);
+const sessionOf = (value) => (/^[a-f0-9-]{20,40}$/i.test(value || "") ? value : "unknown");
 const track = (event, source, details = {}) =>
   console.log(JSON.stringify({ event, source, ...details, timestamp: new Date().toISOString() }));
 
 const itemSchema = {
-  type: 'object',
+  type: "object",
   properties: {
-    category: { type: 'string', enum: ['top', 'bottom', 'outer', 'dress', 'shoes', 'unknown'] },
-    season: { type: 'string', enum: ['summer', 'winter', 'all', 'transitional', 'unknown'] },
-    fit: { type: 'string' },
-    material: { type: 'string' },
-    dominant_colors: { type: 'array', items: { type: 'string' }, maxItems: 3 },
-    description: { type: 'string' },
+    category: { type: "string", enum: ["top", "bottom", "outer", "dress", "shoes", "unknown"] },
+    season: { type: "string", enum: ["summer", "winter", "all", "transitional", "unknown"] },
+    fit: { type: "string" },
+    material: { type: "string" },
+    dominant_colors: { type: "array", items: { type: "string" }, maxItems: 3 },
+    description: { type: "string" },
   },
-  required: ['category', 'season', 'fit', 'material', 'dominant_colors', 'description'],
+  required: ["category", "season", "fit", "material", "dominant_colors", "description"],
 };
 const recommendationSchema = {
-  type: 'object',
+  type: "object",
   properties: {
-    category: { type: 'string', enum: ['top', 'bottom', 'outer', 'shoes'] },
-    title: { type: 'string' },
-    color: { type: 'string' },
-    fit: { type: 'string' },
-    material: { type: 'string' },
-    season: { type: 'string', enum: ['spring', 'summer', 'autumn', 'winter', 'all', 'transitional'] },
-    search_query: { type: 'string' },
-    reason: { type: 'string' },
-    avoid: { type: 'string' },
+    category: { type: "string", enum: ["top", "bottom", "outer", "shoes"] },
+    title: { type: "string" },
+    color: { type: "string" },
+    fit: { type: "string" },
+    material: { type: "string" },
+    season: { type: "string", enum: ["spring", "summer", "autumn", "winter", "all", "transitional"] },
+    search_query: { type: "string" },
+    reason: { type: "string" },
+    avoid: { type: "string" },
   },
-  required: ['category', 'title', 'color', 'fit', 'material', 'season', 'search_query', 'reason', 'avoid'],
+  required: ["category", "title", "color", "fit", "material", "season", "search_query", "reason", "avoid"],
 };
 const responseSchema = {
-  type: 'object',
+  type: "object",
   properties: {
-    confidence: { type: 'integer', minimum: 0, maximum: 100 },
-    summary: { type: 'string' },
-    style_direction: { type: 'string' },
+    confidence: { type: "integer", minimum: 0, maximum: 100 },
+    summary: { type: "string" },
+    style_direction: { type: "string" },
     owned: itemSchema,
     recommendations: {
-      type: 'array',
+      type: "array",
       items: recommendationSchema,
       minItems: 3,
       maxItems: 3,
     },
   },
-  required: ['confidence', 'summary', 'style_direction', 'owned', 'recommendations'],
+  required: ["confidence", "summary", "style_direction", "owned", "recommendations"],
 };
 
 async function imageBlock(mime, bytes) {
-  if (['image/heic', 'image/heif'].includes(mime)) {
-    bytes = Buffer.from(await convertHeic({ buffer: bytes, format: 'JPEG', quality: 0.85 }));
+  if (["image/heic", "image/heif"].includes(mime)) {
+    bytes = Buffer.from(await convertHeic({ buffer: bytes, format: "JPEG", quality: 0.85 }));
   }
   bytes = await sharp(bytes)
     .rotate()
-    .resize({ width: 1568, height: 1568, fit: 'inside', withoutEnlargement: true })
+    .resize({ width: 1568, height: 1568, fit: "inside", withoutEnlargement: true })
     .jpeg({ quality: 82, mozjpeg: true })
     .toBuffer();
-  if (bytes.length > 4_500_000) throw Error('사진을 충분히 줄이지 못했어요. 다른 사진으로 시도해 주세요.');
-  return { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: bytes.toString('base64') } };
+  if (bytes.length > 4_500_000) throw Error("사진을 충분히 줄이지 못했어요. 다른 사진으로 시도해 주세요.");
+  return { type: "image", source: { type: "base64", media_type: "image/jpeg", data: bytes.toString("base64") } };
 }
 
 async function readJson(req) {
@@ -101,25 +101,25 @@ async function readJson(req) {
   let size = 0;
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > 15_000_000) throw Error('request too large');
+    if (size > 15_000_000) throw Error("request too large");
     chunks.push(chunk);
   }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
 async function analyze(body) {
   const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) throw Object.assign(Error('Claude API 키가 설정되지 않았어요.'), { status: 503 });
-  if (!imageTypes.has(body.mimeType) || !/^[A-Za-z0-9+/=]+$/.test(body.imageData || '')) {
-    throw Error('지원하지 않는 사진이에요.');
+  if (!key) throw Object.assign(Error("Claude API 키가 설정되지 않았어요."), { status: 503 });
+  if (!imageTypes.has(body.mimeType) || !/^[A-Za-z0-9+/=]+$/.test(body.imageData || "")) {
+    throw Error("지원하지 않는 사진이에요.");
   }
-  const gender = { male: '남성', female: '여성' }[body.gender];
-  if (!gender) throw Error('남성 또는 여성을 선택해 주세요.');
-  const season = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' }[body.season];
-  if (!season) throw Error('봄, 여름, 가을, 겨울 중 하나를 선택해 주세요.');
+  const gender = { male: "남성", female: "여성" }[body.gender];
+  if (!gender) throw Error("남성 또는 여성을 선택해 주세요.");
+  const season = { spring: "봄", summer: "여름", autumn: "가을", winter: "겨울" }[body.season];
+  if (!season) throw Error("봄, 여름, 가을, 겨울 중 하나를 선택해 주세요.");
   const prompt = `당신은 온라인 쇼핑을 돕는 패션 스타일리스트다.
 사진 속 사용자가 가진 옷 한 벌을 먼저 분석하고, 이 옷과 함께 입기 위해 구매하면 좋은 보완 아이템을 정확히 3개 추천하라.
-착용 상황은 ${body.occasion || '일상'}이다.
+착용 상황은 ${body.occasion || "일상"}이다.
 추천 및 검색 대상은 ${gender}이다.
 착용 계절은 ${season}이다.
 
@@ -140,71 +140,71 @@ async function analyze(body) {
     max_tokens: 1600,
     messages: [
       {
-        role: 'user',
+        role: "user",
         content: [
-          await imageBlock(body.mimeType, Buffer.from(body.imageData, 'base64')),
-          { type: 'text', text: prompt },
+          await imageBlock(body.mimeType, Buffer.from(body.imageData, "base64")),
+          { type: "text", text: prompt },
         ],
       },
     ],
     tools: [
       {
-        name: 'record_outfit_recommendations',
-        description: '사진 속 옷 분석과 구매할 보완 아이템 3개를 지정된 구조로 기록한다.',
+        name: "record_outfit_recommendations",
+        description: "사진 속 옷 분석과 구매할 보완 아이템 3개를 지정된 구조로 기록한다.",
         input_schema: responseSchema,
       },
     ],
-    tool_choice: { type: 'tool', name: 'record_outfit_recommendations' },
+    tool_choice: { type: "tool", name: "record_outfit_recommendations" },
   };
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
     body: JSON.stringify(request),
     signal: AbortSignal.timeout(30000),
   });
   const data = await response.json();
-  if (!response.ok) throw Object.assign(Error(data.error?.message || '추천을 만들지 못했어요.'), { status: 502 });
+  if (!response.ok) throw Object.assign(Error(data.error?.message || "추천을 만들지 못했어요."), { status: 502 });
   const analysis = data.content?.find(
-    part => part.type === 'tool_use' && part.name === 'record_outfit_recommendations',
+    (part) => part.type === "tool_use" && part.name === "record_outfit_recommendations",
   )?.input;
-  if (!analysis) throw Object.assign(Error('추천 결과를 받지 못했어요.'), { status: 502 });
+  if (!analysis) throw Object.assign(Error("추천 결과를 받지 못했어요."), { status: 502 });
   return { analysis, targetGender: body.gender, targetSeason: body.season, model, usage: data.usage };
 }
 
 createServer(async (req, res) => {
   try {
     const origin = new URL(req.url, `http://${req.headers.host}`);
-    if (origin.pathname === '/api/analyze' && req.method === 'POST') {
-      const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+    if (origin.pathname === "/api/analyze" && req.method === "POST") {
+      const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown").split(",")[0].trim();
       if (!allowAnalyze(ip)) {
-        res.writeHead(429, { 'content-type': 'application/json', 'retry-after': '3600' });
-        return res.end(JSON.stringify({ error: '요청이 많아요. 한 시간 뒤에 다시 시도해 주세요.' }));
+        res.writeHead(429, { "content-type": "application/json", "retry-after": "3600" });
+        return res.end(JSON.stringify({ error: "요청이 많아요. 한 시간 뒤에 다시 시도해 주세요." }));
       }
       const body = await readJson(req);
       const source = sourceOf(body.source);
       const session = sessionOf(body.session);
       const gender = safeLabel(body.gender);
       const season = safeLabel(body.season);
-      track('recommendation_started', source, { session, gender, season });
+      track("recommendation_started", source, { session, gender, season });
       let data;
       try {
         data = await analyze(body);
-        track('recommendation_completed', source, {
+        track("recommendation_completed", source, {
           session,
           gender,
           season,
-          categories: data.analysis.recommendations.map(item => item.category).join(','),
+          categories: data.analysis.recommendations.map((item) => item.category).join(","),
         });
       } catch (error) {
-        track('recommendation_failed', source, { session, gender, season });
+        track("recommendation_failed", source, { session, gender, season });
         throw error;
       }
-      res.writeHead(200, { 'content-type': 'application/json' });
+      res.writeHead(200, { "content-type": "application/json" });
       return res.end(JSON.stringify(data));
     }
-    if (origin.pathname === '/api/track' && req.method === 'POST') {
+    if (origin.pathname === "/api/track" && req.method === "POST") {
       const body = await readJson(req);
-      if (!clientEvents.has(body.event)) throw Error('invalid event');
+      if (!clientEvents.has(body.event)) throw Error("invalid event");
       track(body.event, sourceOf(body.source), {
         session: sessionOf(body.session),
         category: safeLabel(body.category),
@@ -215,13 +215,13 @@ createServer(async (req, res) => {
       res.writeHead(204);
       return res.end();
     }
-    const file = origin.pathname === '/' ? 'fit-check-prototype.html' : origin.pathname.slice(1);
-    if (file.includes('..')) throw Error('invalid file');
+    const file = origin.pathname === "/" ? "landing.html" : origin.pathname.slice(1);
+    if (file.includes("..")) throw Error("invalid file");
     const body = await readFile(new URL(`./${file}`, import.meta.url));
-    res.writeHead(200, { 'content-type': types[extname(file)] || 'application/octet-stream' });
+    res.writeHead(200, { "content-type": types[extname(file)] || "application/octet-stream" });
     res.end(body);
   } catch (error) {
-    res.writeHead(error.status || 422, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ error: error.message || '요청을 처리하지 못했어요.' }));
+    res.writeHead(error.status || 422, { "content-type": "application/json" });
+    res.end(JSON.stringify({ error: error.message || "요청을 처리하지 못했어요." }));
   }
-}).listen(port, '0.0.0.0', () => console.log(`http://localhost:${port}`));
+}).listen(port, "0.0.0.0", () => console.log(`http://localhost:${port}`));
